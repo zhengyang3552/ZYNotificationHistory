@@ -285,6 +285,7 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * View notification - simulate clicking on notification by launching the app
+     * If the app doesn't have a launcher intent, show app details page
      */
     private fun viewNotification(entity: NotificationEntity) {
         try {
@@ -298,11 +299,8 @@ class MainActivity : AppCompatActivity() {
                     Snackbar.LENGTH_SHORT
                 ).show()
             } else {
-                Snackbar.make(
-                    binding.root,
-                    "未找到该应用的启动方式",
-                    Snackbar.LENGTH_SHORT
-                ).show()
+                // If no launcher intent (e.g., system service), show app details page
+                showAppDetailsPage(entity.packageName)
             }
         } catch (e: Exception) {
             Snackbar.make(
@@ -310,6 +308,42 @@ class MainActivity : AppCompatActivity() {
                 "查看失败: ${e.message}",
                 Snackbar.LENGTH_SHORT
             ).show()
+        }
+    }
+
+    /**
+     * Show app details page for the given package
+     */
+    private fun showAppDetailsPage(packageName: String) {
+        try {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = android.net.Uri.parse("package:$packageName")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+            Snackbar.make(
+                binding.root,
+                "正在打开应用详情: ${getAppNameFromPackage(packageName)}",
+                Snackbar.LENGTH_SHORT
+            ).show()
+        } catch (e: Exception) {
+            Snackbar.make(
+                binding.root,
+                "无法打开应用详情: ${getAppNameFromPackage(packageName)}",
+                Snackbar.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    /**
+     * Get app name from package name
+     */
+    private fun getAppNameFromPackage(packageName: String): String {
+        return try {
+            val appInfo = packageManager.getApplicationInfo(packageName, 0)
+            packageManager.getApplicationLabel(appInfo).toString()
+        } catch (e: Exception) {
+            packageName
         }
     }
 }
