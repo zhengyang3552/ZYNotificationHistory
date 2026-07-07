@@ -28,6 +28,18 @@ jobs:
         run: |
           sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
+      - name: Generate debug keystore
+        run: |
+          keytool -genkeypair -v \
+            -dname "CN=Test, OU=Test, O=Test, L=Test, ST=Test, C=US" \
+            -alias test-key \
+            -keypass testpass \
+            -keystore app/release.keystore \
+            -storepass testpass \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
