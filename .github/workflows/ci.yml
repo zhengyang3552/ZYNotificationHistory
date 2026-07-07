@@ -45,7 +45,7 @@ jobs:
 
       - name: Build with Gradle
         env:
-          KEYSTORE_PATH: app/release.keystore
+          KEYSTORE_PATH: release.keystore
           KEYSTORE_PASSWORD: testpass
           KEY_ALIAS: test-key
           KEY_PASSWORD: testpass
