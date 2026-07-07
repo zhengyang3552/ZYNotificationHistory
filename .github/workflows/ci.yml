@@ -21,20 +21,25 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK
+        run: |
+          sdkmanager "platforms;android-34" "build-tools;34.0.0"
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build --scan
+        run: ./gradlew assembleDebug
 
       - name: Run lint
         run: ./gradlew lint
 
-      - name: Upload build outputs
+      - name: Upload APK artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: app-build-outputs
-          path: |
-            app/build/outputs/
-            app/build/reports/
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
