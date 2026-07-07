@@ -147,4 +147,3 @@ class SettingsActivity : AppCompatActivity() {
         applySavedTheme()
     }
 }
-// fix
