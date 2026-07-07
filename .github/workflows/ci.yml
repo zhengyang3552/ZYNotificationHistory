@@ -28,18 +28,12 @@ jobs:
         run: |
           sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
-      - name: Restore fixed keystore
-        run: |
-          echo "$FIXED_KEYSTORE" | base64 -d > app/release.keystore
-        env:
-          FIXED_KEYSTORE: ${{ secrets.FIXED_KEYSTORE }}
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build with Gradle
         env:
-          KEYSTORE_PATH: release.keystore
+          KEYSTORE_PATH: app/release.keystore
           KEYSTORE_PASSWORD: android123
           KEY_ALIAS: zy-notification-history
           KEY_PASSWORD: android123
