@@ -44,6 +44,11 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
+        env:
+          KEYSTORE_PATH: app/release.keystore
+          KEYSTORE_PASSWORD: testpass
+          KEY_ALIAS: test-key
+          KEY_PASSWORD: testpass
         run: ./gradlew assembleDebug
 
       - name: Run lint
