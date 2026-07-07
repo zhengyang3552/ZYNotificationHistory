@@ -28,17 +28,11 @@ jobs:
         run: |
           sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
-      - name: Generate debug keystore
+      - name: Restore fixed keystore
         run: |
-          keytool -genkeypair -v \
-            -dname "CN=Test, OU=Test, O=Test, L=Test, ST=Test, C=US" \
-            -alias test-key \
-            -keypass testpass \
-            -keystore app/release.keystore \
-            -storepass testpass \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000
+          echo "$FIXED_KEYSTORE" | base64 -d > app/release.keystore
+        env:
+          FIXED_KEYSTORE: ${{ secrets.FIXED_KEYSTORE }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -46,14 +40,14 @@ jobs:
       - name: Build with Gradle
         env:
           KEYSTORE_PATH: release.keystore
-          KEYSTORE_PASSWORD: testpass
-          KEY_ALIAS: test-key
-          KEY_PASSWORD: testpass
-        run: ./gradlew assembleDebug
+          KEYSTORE_PASSWORD: android123
+          KEY_ALIAS: zy-notification-history
+          KEY_PASSWORD: android123
+        run: ./gradlew assembleRelease
 
       - name: Upload APK artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: app-release-apk
+          path: app/build/outputs/apk/release/*.apk
