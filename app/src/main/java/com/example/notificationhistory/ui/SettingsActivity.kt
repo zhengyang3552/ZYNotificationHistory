@@ -45,7 +45,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun applySavedTheme() {
         val themeMode = prefs.getString(KEY_THEME, THEME_SYSTEM) ?: THEME_SYSTEM
         when (themeMode) {
-            THEME_LIGHT -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NO_NIGHT)
+            THEME_LIGHT -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             THEME_DARK -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
@@ -82,7 +82,7 @@ class SettingsActivity : AppCompatActivity() {
                 }
                 R.id.radio_theme_light -> {
                     prefs.edit().putString(KEY_THEME, THEME_LIGHT).apply()
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NO_NIGHT)
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
                     Toast.makeText(this, "已切换到浅色主题", Toast.LENGTH_SHORT).show()
                 }
                 R.id.radio_theme_dark -> {
@@ -147,3 +147,4 @@ class SettingsActivity : AppCompatActivity() {
         applySavedTheme()
     }
 }
+// fix
