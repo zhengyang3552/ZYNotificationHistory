@@ -1,16 +1,14 @@
 package com.example.notificationhistory.ui
 
-import android.app.PendingIntent
-import android.content.ComponentName
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.provider.Settings
-import android.service.notification.NotificationListenerService
 import android.text.TextUtils
 import android.view.View
 import android.widget.Toast
-import java.lang.reflect.Method
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -33,6 +31,12 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: NotificationAdapter
+    private lateinit var notificationReceiver: BroadcastReceiver
+
+    // Action constants
+    private companion object {
+        const val ACTION_DELETE_NOTIFICATION = "com.example.notificationhistory.ACTION_DELETE"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,8 +48,43 @@ class MainActivity : AppCompatActivity() {
         setupPermissionCard()
         setupClearAllFab()
         setupBackPressedCallback()
+        setupDeleteReceiver()  // 设置广播接收器
 
         checkNotificationPermission()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 注册广播接收器，接收删除通知的请求
+        ContextCompat.registerReceiver(
+            this,
+            notificationReceiver,
+            IntentFilter(ACTION_DELETE_NOTIFICATION),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 取消注册广播接收器
+        unregisterReceiver(notificationReceiver)
+    }
+
+    /**
+     * 设置删除通知的广播接收器
+     * 当从适配器接收到删除请求时，直接调用 Service 删除
+     */
+    private fun setupDeleteReceiver() {
+        notificationReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == ACTION_DELETE_NOTIFICATION) {
+                    val key = intent.getStringExtra("key")
+                    if (!key.isNullOrBlank()) {
+                        deleteNotificationByKey(key)
+                    }
+                }
+            }
+        }
     }
 
     private fun setupToolbar() {
@@ -67,7 +106,8 @@ class MainActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         adapter = NotificationAdapter(
             onRemoveNotification = { entity ->
-                removeNotificationFromBar(entity)
+                // 通过广播发送删除请求
+                sendDeleteBroadcast(entity.key)
             },
             onViewNotification = { entity ->
                 viewNotification(entity)
@@ -94,6 +134,7 @@ class MainActivity : AppCompatActivity() {
         binding.apply {
             tvStatus.setTextColor(getColor(R.color.md_theme_onSecondaryContainer))
             btnPermission.setOnClickListener {
+                // 跳转到通知监听设置页面
                 startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
             }
         }
@@ -144,13 +185,13 @@ class MainActivity : AppCompatActivity() {
                 cardStatus.visibility = View.GONE
             } else {
                 cardStatus.visibility = View.VISIBLE
-                tvStatus.text = "通知权限未开启，请点击开启"
+                tvStatus.text = "需要开启「通知使用权」以读取通知历史"
                 tvStatus.setTextColor(getColor(R.color.md_theme_onSecondaryContainer))
                 ivStatusIcon.setImageResource(android.R.drawable.ic_dialog_alert)
                 ivStatusIcon.setImageTintList(
                     getColorStateList(R.color.md_theme_onSecondaryContainer)
                 )
-                btnPermission.text = "去开启"
+                btnPermission.text = "前往开启"
                 btnPermission.isEnabled = true
                 btnPermission.isClickable = true
             }
@@ -197,52 +238,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Helper function to call NotificationListenerService.getService() via reflection.
-     * getService() is a hidden API, so we must use reflection.
+     * 发送删除通知的广播
      */
-    private fun getNotificationListenerService(): Any? {
-        return try {
-            val getServiceMethod = NotificationListenerService::class.java.getDeclaredMethod(
-                "getService",
-                Context::class.java,
-                ComponentName::class.java
-            )
-            getServiceMethod.isAccessible = true
-            getServiceMethod.invoke(null, this, ComponentName(this, NotificationService::class.java))
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
+    private fun sendDeleteBroadcast(key: String) {
+        val intent = Intent(ACTION_DELETE_NOTIFICATION).apply {
+            putExtra("key", key)
         }
+        sendBroadcast(intent)
     }
 
     /**
-     * Remove notification from notification bar using NotificationListenerService
+     * 通过 key 直接删除通知栏中的通知
      */
-    private fun removeNotificationFromBar(entity: NotificationEntity) {
+    private fun deleteNotificationByKey(key: String) {
         try {
             val service = getNotificationListenerService()
             if (service != null) {
-                val sbn = findStatusBarNotification(entity.packageName, entity.title, entity.content)
-                if (sbn != null) {
-                    val cancelNotificationMethod = service.javaClass.getMethod(
-                        "cancelNotification",
-                        String::class.java,
-                        String::class.java,
-                        Int::class.java
-                    )
-                    cancelNotificationMethod.invoke(service, sbn.packageName, sbn.tag, sbn.id)
-                    Snackbar.make(
-                        binding.root,
-                        "已从通知栏移除",
-                        Snackbar.LENGTH_SHORT
-                    ).show()
-                } else {
-                    Snackbar.make(
-                        binding.root,
-                        "通知可能已不存在于通知栏",
-                        Snackbar.LENGTH_SHORT
-                    ).show()
-                }
+                // 调用 NotificationService 的 deleteByKey 方法
+                val deleteMethod = service.javaClass.getMethod("deleteByKey", String::class.java)
+                deleteMethod.invoke(service, key)
+                Snackbar.make(
+                    binding.root,
+                    "已从通知栏移除",
+                    Snackbar.LENGTH_SHORT
+                ).show()
+            } else {
+                Snackbar.make(
+                    binding.root,
+                    "无法获取通知服务",
+                    Snackbar.LENGTH_SHORT
+                ).show()
             }
         } catch (e: Exception) {
             Snackbar.make(
@@ -254,33 +279,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Find StatusBarNotification by package, title and content
+     * Helper function to call NotificationListenerService.getService() via reflection.
+     * getService() is a hidden API, so we must use reflection.
      */
-    private fun findStatusBarNotification(
-        packageName: String,
-        title: String,
-        content: String
-    ): android.service.notification.StatusBarNotification? {
-        try {
-            val service = getNotificationListenerService()
-            if (service != null) {
-                val activeNotificationsField = service.javaClass.getField("activeNotifications")
-                @Suppress("UNCHECKED_CAST")
-                val activeNotifications = activeNotificationsField.get(service) as List<android.service.notification.StatusBarNotification>
-                for (sbn in activeNotifications) {
-                    if (sbn.packageName == packageName) {
-                        val sbnTitle = sbn.notification.extras.getString("android.title") ?: ""
-                        val sbnContent = sbn.notification.extras.getCharSequence("android.text")?.toString() ?: ""
-                        if (sbnTitle == title || sbnContent == content) {
-                            return sbn
-                        }
-                    }
-                }
-            }
+    private fun getNotificationListenerService(): Any? {
+        return try {
+            val getServiceMethod = android.service.notification.NotificationListenerService::class.java.getDeclaredMethod(
+                "getService",
+                Context::class.java,
+                android.content.ComponentName::class.java
+            )
+            getServiceMethod.isAccessible = true
+            getServiceMethod.invoke(null, this, android.content.ComponentName(this, NotificationService::class.java))
         } catch (e: Exception) {
             e.printStackTrace()
+            null
         }
-        return null
     }
 
     /**

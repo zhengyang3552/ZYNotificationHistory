@@ -13,6 +13,13 @@ class NotificationService : NotificationListenerService() {
     private val job = SupervisorJob()
     private val scope = CoroutineScope(job + Dispatchers.IO)
 
+    /**
+     * 根据 key 删除通知栏中的通知（外部调用入口）
+     */
+    fun deleteByKey(key: String) {
+        cancelNotification(key)
+    }
+
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         val extras = sbn.notification.extras
         val packageName = sbn.packageName
@@ -24,7 +31,11 @@ class NotificationService : NotificationListenerService() {
             val title = extras.getString("android.title") ?: ""
             val text = extras.getCharSequence("android.text")?.toString() ?: ""
 
+            // 保存 key（StatusBarNotification.key 是精确标识，用于后续删除）
+            val entityKey = sbn.key
+
             val entity = NotificationEntity(
+                key = entityKey,
                 packageName = packageName,
                 appName = appName,
                 title = title,
@@ -41,6 +52,7 @@ class NotificationService : NotificationListenerService() {
                     if (existing != null) {
                         // Update existing record without changing its original timestamp
                         val updated = existing.copy(
+                            key = entityKey,
                             title = title,
                             content = text,
                             // keep isDeleted false and isOngoing true

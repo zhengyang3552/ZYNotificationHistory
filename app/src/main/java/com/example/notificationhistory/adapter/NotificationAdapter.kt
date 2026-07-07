@@ -97,9 +97,11 @@ class NotificationAdapter(
             .setItems(arrayOf("从通知栏移除此通知", "查看此通知")) { _, which ->
                 when (which) {
                     0 -> {
+                        // 从通知栏移除
                         onRemoveNotification(item)
                     }
                     1 -> {
+                        // 查看此通知（打开对应应用）
                         onViewNotification(item)
                     }
                 }
