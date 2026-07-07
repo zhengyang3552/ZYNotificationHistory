@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- LogFox-style dark brown theme colors -->
+    <color name="logfox_background">#1E1914</color>
+    <color name="logfox_surface">#2A2420</color>
+    <color name="logfox_surface_variant">#3A3430</color>
+    <color name="logfox_primary">#D4A87C</color>
+    <color name="logfox_onPrimary">#1E1914</color>
+    <color name="logfox_onBackground">#E8DDD0</color>
+    <color name="logfox_onSurface">#E8DDD0</color>
+    <color name="logfox_onSurfaceVariant">#A89A8E</color>
+    <color name="logfox_primaryContainer">#4A3828</color>
+    <color name="logfox_onPrimaryContainer">#F5DCC8</color>
+    <color name="logfox_bottom_nav_bg">#2A2420</color>
+</resources>

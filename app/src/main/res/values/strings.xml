@@ -1,4 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">通知历史查看器</string>
+
+    <!-- Settings strings -->
+    <string name="settings_title">设置</string>
+    <string name="settings_section_ui">用户界面</string>
+    <string name="settings_section_time">显示</string>
+    <string name="settings_section_about">关于本 App</string>
+
+    <!-- Theme settings -->
+    <string name="settings_theme">主题</string>
+    <string name="settings_theme_summary">选择应用的主题样式</string>
+    <string name="settings_theme_system">跟随系统</string>
+    <string name="settings_theme_light">浅色主题</string>
+    <string name="settings_theme_dark">黑色主题</string>
+
+    <!-- Time format settings -->
+    <string name="settings_time_format">时间显示样式</string>
+    <string name="settings_time_format_summary">选择通知列表中的时间显示方式</string>
+    <string name="settings_time_relative">相对时间</string>
+    <string name="settings_time_absolute">精确时间</string>
+    <string name="settings_time_relative_summary">显示如"3分钟前"的相对时间</string>
+    <string name="settings_time_absolute_summary">显示"yyyy-MM-dd HH:mm:ss"格式</string>
+
+    <!-- Version info -->
+    <string name="settings_version">版本</string>
 </resources>
