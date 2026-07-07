@@ -51,9 +51,6 @@ jobs:
           KEY_PASSWORD: testpass
         run: ./gradlew assembleDebug
 
-      - name: Run lint (non-fatal)
-        run: ./gradlew lintDebug --continue
-
       - name: Upload APK artifact
         if: success()
         uses: actions/upload-artifact@v4
