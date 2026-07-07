@@ -12,16 +12,17 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import com.example.notificationhistory.R
 import com.example.notificationhistory.adapter.NotificationAdapter
 import com.example.notificationhistory.data.AppDatabase
 import com.example.notificationhistory.data.NotificationEntity
 import com.example.notificationhistory.databinding.ActivityMainBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -37,6 +38,7 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
         setupPermissionCard()
         setupClearAllFab()
+        setupBottomNavigation()
         setupBackPressedCallback()
 
         checkNotificationPermission()
@@ -81,7 +83,6 @@ class MainActivity : AppCompatActivity() {
         binding.apply {
             tvStatus.setTextColor(getColor(R.color.md_theme_onSecondaryContainer))
             btnPermission.setOnClickListener {
-                // 跳转到通知监听设置页面
                 startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
             }
         }
@@ -90,6 +91,22 @@ class MainActivity : AppCompatActivity() {
     private fun setupClearAllFab() {
         binding.fabClearAll.setOnClickListener {
             showClearAllDialog()
+        }
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    // Already on home
+                    true
+                }
+                R.id.nav_settings -> {
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                    true
+                }
+                else -> false
+            }
         }
     }
 
