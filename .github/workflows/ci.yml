@@ -33,7 +33,7 @@ jobs:
 
       - name: Build with Gradle
         env:
-          KEYSTORE_PATH: app/release.keystore
+          KEYSTORE_PATH: release.keystore
           KEYSTORE_PASSWORD: android123
           KEY_ALIAS: zy-notification-history
           KEY_PASSWORD: android123
