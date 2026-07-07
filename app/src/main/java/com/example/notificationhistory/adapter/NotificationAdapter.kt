@@ -14,11 +14,8 @@ import com.example.notificationhistory.R
 import com.example.notificationhistory.data.NotificationEntity
 import com.example.notificationhistory.util.TimeUtil
 import com.google.android.material.chip.Chip
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class NotificationAdapter(
-    private val onRemoveNotification: (NotificationEntity) -> Unit,
-    private val onViewNotification: (NotificationEntity) -> Unit
 ) :
     ListAdapter<NotificationEntity, NotificationAdapter.VH>(DiffCallback()) {
 
@@ -83,30 +80,6 @@ class NotificationAdapter(
         } catch (e: Exception) {
             holder.ivIcon.setImageResource(android.R.drawable.sym_def_app_icon)
         }
-
-        // Long press menu
-        holder.root.setOnLongClickListener {
-            showContextMenu(context, item)
-            true
-        }
-    }
-
-    private fun showContextMenu(context: android.content.Context, item: NotificationEntity) {
-        MaterialAlertDialogBuilder(context)
-            .setTitle(item.appName)
-            .setItems(arrayOf("从通知栏移除此通知", "查看此通知")) { _, which ->
-                when (which) {
-                    0 -> {
-                        // 从通知栏移除
-                        onRemoveNotification(item)
-                    }
-                    1 -> {
-                        // 查看此通知（打开对应应用）
-                        onViewNotification(item)
-                    }
-                }
-            }
-            .show()
     }
 
     /**
