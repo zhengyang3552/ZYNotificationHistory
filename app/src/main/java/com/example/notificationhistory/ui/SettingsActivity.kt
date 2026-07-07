@@ -119,6 +119,9 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation() {
+        // Highlight the current "Settings" button
+        binding.btnSettings.setBackgroundResource(android.R.drawable.list_selector_background_highlight)
+
         // Main button - navigate to MainActivity
         binding.btnMain.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
