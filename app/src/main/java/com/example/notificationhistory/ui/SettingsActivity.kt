@@ -28,14 +28,14 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Initialize prefs FIRST before any method that uses it
+        prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         // Apply theme BEFORE super.onCreate to avoid flicker
         applySavedTheme()
 
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
 
         setupToolbar()
         setupPreferences()

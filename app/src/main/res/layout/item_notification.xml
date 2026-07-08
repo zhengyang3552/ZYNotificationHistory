@@ -1,134 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="12dp"
-    android:background="?attr/selectableItemBackground"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="1dp"
+    app:cardBackgroundColor="?attr/colorSurfaceVariant"
+    android:foreground="?attr/selectableItemBackground"
     android:id="@+id/notification_item_root">
 
-    <!-- Header Row: Icon + App Info + Tags + Time -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:padding="12dp">
 
-        <!-- App Icon - with rounded corner background -->
-        <ImageView
-            android:id="@+id/iv_icon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:scaleType="centerCrop"
-            android:background="@drawable/icon_background"
-            android:padding="4dp"
-            android:contentDescription="@null"
-            android:layout_marginEnd="12dp" />
-
-        <!-- App Info -->
+        <!-- Header Row: Icon + App Info + Tags + Time -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- App Icon - with rounded corner background -->
+            <ImageView
+                android:id="@+id/iv_icon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:scaleType="centerCrop"
+                android:background="@drawable/icon_background"
+                android:padding="4dp"
+                android:contentDescription="@null"
+                android:layout_marginEnd="12dp"
+                android:layout_gravity="start" />
+
+            <!-- App Info -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_gravity="center_vertical">
+
+                <!-- App Name -->
+                <TextView
+                    android:id="@+id/tv_app_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textColor="?attr/colorOnSurface"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/tv_package"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
+            <!-- Tags Area -->
+            <LinearLayout
+                android:id="@+id/layout_tags"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginStart="8dp"
+                android:layout_gravity="center_vertical">
+
+                <!-- Tag (带背景色) -->
+                <TextView
+                    android:id="@+id/chip_tag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:background="@drawable/tag_background"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp" />
+
+                <!-- Time -->
+                <TextView
+                    android:id="@+id/tv_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                    android:textColor="?attr/colorPrimary" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Divider with theme color instead of white -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/colorOutlineVariant"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:alpha="0.4" />
+
+        <!-- Content Area -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- App Name + Package -->
+            <!-- Title -->
             <TextView
-                android:id="@+id/tv_app_name"
+                android:id="@+id/tv_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="?attr/textAppearanceTitleMedium"
                 android:textColor="?attr/colorOnSurface"
-                android:maxLines="1"
+                android:textStyle="bold"
+                android:maxLines="2"
                 android:ellipsize="end" />
 
+            <!-- Content -->
             <TextView
-                android:id="@+id/tv_package"
+                android:id="@+id/tv_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
-                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                android:layout_marginTop="4dp"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:maxLines="1"
+                android:maxLines="4"
                 android:ellipsize="end" />
         </LinearLayout>
 
-        <!-- Tags Area -->
-        <LinearLayout
-            android:id="@+id/layout_tags"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginStart="8dp">
-
-            <!-- Tag (带背景色) -->
-            <TextView
-                android:id="@+id/chip_tag"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                android:background="@drawable/tag_background"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="4dp" />
-
-            <!-- Time -->
-            <TextView
-                android:id="@+id/tv_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                android:textColor="?attr/colorPrimary" />
-        </LinearLayout>
     </LinearLayout>
 
-    <!-- Divider inside - between header and content -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="?attr/colorSurfaceVariant"
-        android:alpha="0.5"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp" />
-
-    <!-- Content Area -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <!-- Title -->
-        <TextView
-            android:id="@+id/tv_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceTitleMedium"
-            android:textColor="?attr/colorOnSurface"
-            android:textStyle="bold"
-            android:maxLines="2"
-            android:ellipsize="end" />
-
-        <!-- Content -->
-        <TextView
-            android:id="@+id/tv_content"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:maxLines="4"
-            android:ellipsize="end" />
-    </LinearLayout>
-
-    <!-- Divider between notifications - white separator line -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="#FFFFFF"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp" />
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>
