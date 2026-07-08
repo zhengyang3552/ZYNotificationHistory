@@ -12,8 +12,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.notificationhistory.R
 import com.example.notificationhistory.data.NotificationEntity
-import com.example.notificationhistory.ui.SettingsActivity.Companion.KEY_TIME_FORMAT
-import com.example.notificationhistory.ui.SettingsActivity.Companion.PREFS_NAME
 import com.example.notificationhistory.util.TimeUtil
 import com.google.android.material.chip.Chip
 
