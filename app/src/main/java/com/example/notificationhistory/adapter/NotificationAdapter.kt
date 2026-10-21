@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.notificationhistory.R
 import com.example.notificationhistory.data.NotificationEntity
+import com.example.notificationhistory.util.AppIconCache
 import com.example.notificationhistory.util.AppPreferences
 import com.example.notificationhistory.util.TimeUtil
 import com.google.android.material.color.MaterialColors
@@ -40,6 +41,9 @@ class NotificationAdapter(
     )
 
     private var options = DisplayOptions()
+
+    /** 三种状态的标签样式缓存：null 表示尚未按当前主题初始化 */
+    private var tagStyles: List<TagStyle>? = null
 
     /** 配置变化时刷新已显示的条目（不重建列表，保持滚动位置） */
     fun submitOptions(newOptions: DisplayOptions) {
@@ -114,13 +118,20 @@ class NotificationAdapter(
             // 状态标签
             bindTag(item)
 
-            // 应用图标：包被卸载 / 无图标时回退系统默认图标
-            val icon = runCatching { context.packageManager.getApplicationIcon(item.packageName) }
-                .getOrNull()
-            if (icon != null) {
-                ivIcon.setImageDrawable(icon)
+            // 应用图标：先取内存缓存，未命中先展示默认图标占位，再异步加载回填。
+            // getApplicationIcon 是 binder IPC，放在绑定期同步执行会在滚动/重绑时掉帧
+            ivIcon.tag = item.packageName
+            val cachedIcon = AppIconCache.get(item.packageName)
+            if (cachedIcon != null) {
+                ivIcon.setImageDrawable(cachedIcon)
             } else {
                 ivIcon.setImageResource(android.R.drawable.sym_def_app_icon)
+                AppIconCache.loadAsync(context, item.packageName) { drawable ->
+                    // 行可能已被复用给其他包名，校验后再填充
+                    if (ivIcon.tag == item.packageName) {
+                        ivIcon.setImageDrawable(drawable)
+                    }
+                }
             }
 
             itemView.setOnClickListener { onItemClick(item) }
@@ -139,32 +150,55 @@ class NotificationAdapter(
         }
 
         private fun bindTag(item: NotificationEntity) {
-            val (labelRes, containerAttr, onContainerAttr) = when {
-                item.isDeleted -> Triple(
-                    R.string.tag_removed,
-                    com.google.android.material.R.attr.colorSurfaceContainerHighest,
-                    com.google.android.material.R.attr.colorOnSurfaceVariant
-                )
-
-                item.isOngoing -> Triple(
-                    R.string.tag_ongoing,
-                    com.google.android.material.R.attr.colorTertiaryContainer,
-                    com.google.android.material.R.attr.colorOnTertiaryContainer
-                )
-
-                else -> Triple(
-                    R.string.tag_normal,
-                    com.google.android.material.R.attr.colorSecondaryContainer,
-                    com.google.android.material.R.attr.colorOnSecondaryContainer
-                )
-            }
-
-            chipTag.setText(labelRes)
-            chipTag.setTextColor(themeColor(itemView, onContainerAttr, R.color.md_theme_on_secondary_container))
-            chipTag.background = roundedBackground(
-                themeColor(itemView, containerAttr, R.color.md_theme_secondary_container)
-            )
+            val style = tagStyleFor(item)
+            chipTag.setText(style.labelRes)
+            chipTag.setTextColor(style.onContainerColor)
+            chipTag.background = style.background
         }
+
+        /**
+         * 三种状态（已移除/常驻/临时）的标签样式按 Adapter 缓存：
+         * 主题属性解析与 GradientDrawable 分配只发生一次，
+         * 主题切换会重建 Activity，缓存随 Adapter 一起失效，无需手动清理。
+         */
+        private fun tagStyleFor(item: NotificationEntity): TagStyle {
+            val styles = tagStyles ?: createTagStyles().also { tagStyles = it }
+            return when {
+                item.isDeleted -> styles[0]
+                item.isOngoing -> styles[1]
+                else -> styles[2]
+            }
+        }
+
+        private fun createTagStyles(): List<TagStyle> = listOf(
+            TagStyle(
+                R.string.tag_removed,
+                roundedBackground(
+                    themeColor(itemView, com.google.android.material.R.attr.colorSurfaceContainerHighest,
+                        R.color.md_theme_surface_container_highest)
+                ),
+                themeColor(itemView, com.google.android.material.R.attr.colorOnSurfaceVariant,
+                    R.color.md_theme_on_surface_variant)
+            ),
+            TagStyle(
+                R.string.tag_ongoing,
+                roundedBackground(
+                    themeColor(itemView, com.google.android.material.R.attr.colorTertiaryContainer,
+                        R.color.md_theme_tertiary_container)
+                ),
+                themeColor(itemView, com.google.android.material.R.attr.colorOnTertiaryContainer,
+                    R.color.md_theme_on_tertiary_container)
+            ),
+            TagStyle(
+                R.string.tag_normal,
+                roundedBackground(
+                    themeColor(itemView, com.google.android.material.R.attr.colorSecondaryContainer,
+                        R.color.md_theme_secondary_container)
+                ),
+                themeColor(itemView, com.google.android.material.R.attr.colorOnSecondaryContainer,
+                    R.color.md_theme_on_secondary_container)
+            ),
+        )
 
         private fun roundedBackground(color: Int): GradientDrawable = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
@@ -172,6 +206,12 @@ class NotificationAdapter(
             cornerRadius = itemView.resources.getDimension(R.dimen.radius_sm)
         }
     }
+
+    private data class TagStyle(
+        val labelRes: Int,
+        val background: GradientDrawable,
+        val onContainerColor: Int
+    )
 
     private fun themeColor(view: View, @AttrRes attr: Int, @ColorRes fallback: Int): Int =
         runCatching { MaterialColors.getColor(view, attr) }

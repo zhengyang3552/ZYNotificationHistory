@@ -119,6 +119,7 @@ export KEY_PASSWORD="your_key_password"
 - 对齐跨应用统一设计规范：品牌种子色切换为 `#0B57D0`（与 ZYEmail / RemoteFileManager 同源），26 个核心角色与规范基线一致，并补全 surface container 阶梯与 fixed 角色（共 47 个语义角色）。
 - 新增「动态取色」开关（Android 12+ 壁纸取色，关闭回退统一品牌色），设置 → 外观。
 - CI 采用三段式规范（build / lint / release），Release 固定签名（Secrets 注入，签名指纹写入构建摘要），并修复 keystore 相对路径解析问题。
+- 性能优化：列表应用图标改为内存缓存 + 异步加载（原先每次绑定都在主线程做 PackageManager IPC）；状态标签样式与时间格式化器按实例缓存；渲染流程不再反复读取 SharedPreferences；主题 / 动态取色切换延后一帧再重建界面，避免打断控件动画。
 
 ### v1.2
 

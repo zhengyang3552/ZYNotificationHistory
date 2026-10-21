@@ -87,8 +87,9 @@ class SettingsActivity : AppCompatActivity() {
                 R.id.btn_theme_dark -> AppPreferences.ThemeMode.DARK
                 else -> AppPreferences.ThemeMode.SYSTEM
             }
-            // setDefaultNightMode 会由 AppCompat 统一重建界面，无需手动 recreate
-            AppPreferences.setThemeMode(this, mode)
+            // setDefaultNightMode 会由 AppCompat 统一重建界面（含本页与主界面），
+            // 延后一帧执行，让分段按钮的选中动画先播放，避免点击瞬间掉帧
+            binding.toggleTheme.post { AppPreferences.setThemeMode(this@SettingsActivity, mode) }
         }
     }
 
@@ -96,8 +97,9 @@ class SettingsActivity : AppCompatActivity() {
         binding.switchDynamicColor.isChecked = DynamicColor.enabled(this)
         binding.switchDynamicColor.setOnCheckedChangeListener { _, checked ->
             DynamicColor.setEnabled(this, checked)
-            // DynamicColor.apply 在 onCreate 中执行，重建后立即生效
-            recreate()
+            // DynamicColor.apply 在 onCreate 中执行；延后一帧重建，
+            // 让滑块动画先完成，切换观感更顺滑
+            binding.switchDynamicColor.post { recreate() }
         }
     }
 

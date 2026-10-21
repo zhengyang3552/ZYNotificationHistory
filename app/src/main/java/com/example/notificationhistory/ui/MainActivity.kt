@@ -48,6 +48,12 @@ class MainActivity : AppCompatActivity() {
     private var latestState = MainUiState()
     private var permissionGranted = false
 
+    /**
+     * 显示配置缓存：onResume 读一次 SharedPreferences 后，
+     * 渲染流程（可能被数据库 Flow 高频触发）直接复用，不再反复读取。
+     */
+    private var displayOptions = NotificationAdapter.DisplayOptions()
+
     private companion object {
         /** 相对时间刷新周期：足够「实时」，又不会造成无谓的重绘 */
         const val TIME_REFRESH_INTERVAL_MS = 15_000L
@@ -73,9 +79,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // 从系统设置返回后权限状态可能已变化
+        // 从系统设置返回后权限状态与显示配置都可能已变化
         refreshPermissionState()
-        adapter.submitOptions(currentDisplayOptions())
+        displayOptions = currentDisplayOptions()
+        adapter.submitOptions(displayOptions)
         render(latestState)
     }
 
@@ -206,7 +213,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun render(state: MainUiState) {
         adapter.submitList(state.records)
-        adapter.submitOptions(currentDisplayOptions())
 
         binding.recyclerView.isVisible = state.hasRecords
         binding.emptyState.isVisible = !state.hasRecords

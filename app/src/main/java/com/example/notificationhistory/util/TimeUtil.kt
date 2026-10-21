@@ -21,6 +21,13 @@ object TimeUtil {
     private const val PATTERN_TIME = "HH:mm"
     private const val PATTERN_DATE = "MM-dd"
 
+    // SimpleDateFormat 创建成本不低，而本工具只在主线程被列表绑定/定时刷新调用，
+    // 缓存单例即可；若未来有线程并发访问，需改为 ThreadLocal
+    private val dateTimeFormat by lazy { SimpleDateFormat(PATTERN_DATE_TIME, Locale.getDefault()) }
+    private val dateTimeSecondsFormat by lazy { SimpleDateFormat(PATTERN_DATE_TIME_SECONDS, Locale.getDefault()) }
+    private val timeFormat by lazy { SimpleDateFormat(PATTERN_TIME, Locale.getDefault()) }
+    private val dateFormat by lazy { SimpleDateFormat(PATTERN_DATE, Locale.getDefault()) }
+
     fun formatAbsolute(timestamp: Long): String = format(timestamp, PATTERN_DATE_TIME)
 
     fun formatAbsoluteWithSeconds(timestamp: Long): String =
@@ -66,6 +73,12 @@ object TimeUtil {
 
     private fun format(timestamp: Long, pattern: String): String =
         runCatching {
-            SimpleDateFormat(pattern, Locale.getDefault()).format(Date(timestamp))
+            val format = when (pattern) {
+                PATTERN_DATE_TIME -> dateTimeFormat
+                PATTERN_DATE_TIME_SECONDS -> dateTimeSecondsFormat
+                PATTERN_TIME -> timeFormat
+                else -> dateFormat
+            }
+            format.format(Date(timestamp))
         }.getOrElse { "--" }
 }
