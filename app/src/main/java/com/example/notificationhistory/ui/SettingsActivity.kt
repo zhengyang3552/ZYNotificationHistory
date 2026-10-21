@@ -1,6 +1,5 @@
 package com.example.notificationhistory.ui
 
-import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -21,8 +20,8 @@ import kotlinx.coroutines.launch
  * 设置页。
  *
  * 改造要点：
- * - 移除硬编码的深棕色配色与手写底栏，改用与其他页面一致的 M3 语义色与
- *   BottomNavigationView；
+ * - 移除硬编码的深棕色配色，改用与其他页面一致的 M3 语义色；
+ * - 移除底部导航栏：返回走顶栏返回键，通知使用权入口就在本页卡片内；
  * - 主题切换不再手动 recreate（原实现 recreate + onResume 再次 applySavedTheme，
  *   容易出现闪烁与重复重建），改为一次全局 setDefaultNightMode 由框架统一重建；
  * - 补齐「显示包名」「保留上限」两个此前只能改代码/根本改不了的配置项；
@@ -50,14 +49,12 @@ class SettingsActivity : AppCompatActivity() {
         setupPermissionSection()
         setupStorageSection()
         setupAboutSection()
-        setupBottomNavigation()
         observeRecordCount()
     }
 
     override fun onResume() {
         super.onResume()
         refreshPermissionState()
-        binding.bottomNavigation.selectedItemId = R.id.nav_settings
     }
 
     // ---------------------------------------------------------------- 初始化
@@ -212,30 +209,6 @@ class SettingsActivity : AppCompatActivity() {
         } else {
             getString(R.string.settings_version, versionName)
         }
-    }
-
-    private fun setupBottomNavigation() {
-        binding.bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_home -> {
-                    goHome()
-                    true
-                }
-
-                R.id.nav_settings -> true
-                else -> false
-            }
-        }
-        binding.bottomNavigation.selectedItemId = R.id.nav_settings
-    }
-
-    private fun goHome() {
-        startActivity(
-            Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            }
-        )
-        finish()
     }
 
     // ---------------------------------------------------------------- 状态

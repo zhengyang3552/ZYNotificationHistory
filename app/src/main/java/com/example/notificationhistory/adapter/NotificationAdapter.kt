@@ -48,6 +48,18 @@ class NotificationAdapter(
         if (itemCount > 0) notifyItemRangeChanged(0, itemCount)
     }
 
+    /**
+     * 周期性刷新可见条目的时间文案。
+     *
+     * 相对时间（如「3 分钟前」）是绑定那一刻计算的，数据库没变化就不会重新绑定，
+     * 界面上就会一直停留在旧值。这里带 [PAYLOAD_TIME] 做局部刷新：
+     * 只重写时间 TextView，不触发布局与动画，也不影响滚动位置。
+     */
+    fun refreshTimes() {
+        if (options.timeFormat == AppPreferences.TimeFormat.ABSOLUTE) return
+        if (itemCount > 0) notifyItemRangeChanged(0, itemCount, PAYLOAD_TIME)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotificationViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_notification, parent, false)
@@ -56,6 +68,18 @@ class NotificationAdapter(
 
     override fun onBindViewHolder(holder: NotificationViewHolder, position: Int) {
         holder.bind(getItem(position), options)
+    }
+
+    override fun onBindViewHolder(
+        holder: NotificationViewHolder,
+        position: Int,
+        payloads: List<Any>
+    ) {
+        if (payloads.contains(PAYLOAD_TIME)) {
+            holder.bindTime(getItem(position), options)
+        } else {
+            super.onBindViewHolder(holder, position, payloads)
+        }
     }
 
     inner class NotificationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -77,10 +101,7 @@ class NotificationAdapter(
             tvPackage.text = item.packageName
 
             // 时间
-            tvTime.text = when (options.timeFormat) {
-                AppPreferences.TimeFormat.ABSOLUTE -> TimeUtil.formatAbsolute(item.timestamp)
-                AppPreferences.TimeFormat.RELATIVE -> TimeUtil.formatRelative(item.timestamp)
-            }
+            bindTime(item, options)
 
             // 标题与正文：标题为空时不占位，正文为空时给出占位文案保持卡片结构完整
             val title = item.title.trim()
@@ -106,6 +127,14 @@ class NotificationAdapter(
             itemView.setOnLongClickListener {
                 onItemLongClick(item)
                 true
+            }
+        }
+
+        /** 时间文案单独成方法，供定时局部刷新复用；每次都以当前时刻重新计算 */
+        fun bindTime(item: NotificationEntity, options: DisplayOptions) {
+            tvTime.text = when (options.timeFormat) {
+                AppPreferences.TimeFormat.ABSOLUTE -> TimeUtil.formatAbsolute(item.timestamp)
+                AppPreferences.TimeFormat.RELATIVE -> TimeUtil.formatRelative(item.timestamp)
             }
         }
 
@@ -147,6 +176,11 @@ class NotificationAdapter(
     private fun themeColor(view: View, @AttrRes attr: Int, @ColorRes fallback: Int): Int =
         runCatching { MaterialColors.getColor(view, attr) }
             .getOrElse { ContextCompat.getColor(view.context, fallback) }
+
+    companion object {
+        /** 局部刷新标记：只更新时间文案，不重绘整行 */
+        const val PAYLOAD_TIME = "payload_time"
+    }
 
     object DiffCallback : DiffUtil.ItemCallback<NotificationEntity>() {
         override fun areItemsTheSame(oldItem: NotificationEntity, newItem: NotificationEntity) =

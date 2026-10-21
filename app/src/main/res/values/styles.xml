@@ -59,17 +59,6 @@
         <item name="navigationIconTint">?attr/colorOnSurfaceVariant</item>
     </style>
 
-    <!-- 底部导航：使用容器色区分于内容面，去掉阴影 -->
-    <style name="Widget.ZYNH.BottomNav" parent="Widget.Material3.BottomNavigationView">
-        <item name="android:background">?attr/colorSurfaceContainer</item>
-        <item name="android:elevation">0dp</item>
-        <item name="itemActiveIndicatorStyle">@style/Widget.ZYNH.BottomNav.ActiveIndicator</item>
-    </style>
-
-    <style name="Widget.ZYNH.BottomNav.ActiveIndicator"
-        parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:color">?attr/colorSecondaryContainer</item>
-    </style>
 
     <!-- 设置项行：最小 48dp 触控高度，右侧值为次级文字色 -->
     <style name="Widget.ZYNH.SettingsRow" parent="">

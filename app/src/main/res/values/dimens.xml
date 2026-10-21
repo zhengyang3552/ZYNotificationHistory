@@ -27,7 +27,7 @@
     <!-- 页面与列表 -->
     <dimen name="screen_margin">16dp</dimen>
     <dimen name="list_horizontal_inset">12dp</dimen>
-    <dimen name="list_bottom_inset">104dp</dimen>
+    <dimen name="list_bottom_inset">88dp</dimen>
     <dimen name="section_spacing">24dp</dimen>
 
     <!-- 组件尺寸 -->

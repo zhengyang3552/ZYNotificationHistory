@@ -25,6 +25,7 @@ import com.example.notificationhistory.util.NotificationAccess
 import com.example.notificationhistory.util.TimeUtil
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -47,6 +48,11 @@ class MainActivity : AppCompatActivity() {
     private var latestState = MainUiState()
     private var permissionGranted = false
 
+    private companion object {
+        /** 相对时间刷新周期：足够「实时」，又不会造成无谓的重绘 */
+        const val TIME_REFRESH_INTERVAL_MS = 15_000L
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -56,9 +62,9 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
         setupPermissionBanner()
         setupFab()
-        setupBottomNavigation()
         setupBackHandling()
         observeState()
+        startTimeTicker()
 
         refreshPermissionState()
     }
@@ -67,7 +73,6 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         // 从系统设置返回后权限状态可能已变化
         refreshPermissionState()
-        binding.bottomNavigation.selectedItemId = R.id.nav_home
         adapter.submitOptions(currentDisplayOptions())
         render(latestState)
     }
@@ -150,19 +155,22 @@ class MainActivity : AppCompatActivity() {
         binding.fabClearAll.setOnClickListener { showClearAllDialog() }
     }
 
-    private fun setupBottomNavigation() {
-        binding.bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_home -> true
-                R.id.nav_settings -> {
-                    openSettings()
-                    true
+    /**
+     * 相对时间定时刷新。
+     *
+     * 相对时间只在条目绑定那一刻计算一次，数据库没有新事件时列表不会重新绑定，
+     * 于是「13 秒前」会一直停在旧值。这里在界面可见期间每 15 秒发一次局部刷新，
+     * 只重写时间 TextView（payload 复用），不触发布局、动画与滚动位置变化。
+     */
+    private fun startTimeTicker() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    delay(TIME_REFRESH_INTERVAL_MS)
+                    adapter.refreshTimes()
                 }
-
-                else -> false
             }
         }
-        binding.bottomNavigation.selectedItemId = R.id.nav_home
     }
 
     private fun setupBackHandling() {

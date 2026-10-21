@@ -52,9 +52,6 @@
     <string name="msg_clipboard">已复制到剪贴板</string>
     <string name="msg_empty_content">该通知没有可复制的内容</string>
 
-    <!-- 底部导航 -->
-    <string name="nav_home">通知</string>
-    <string name="nav_settings">设置</string>
 
     <!-- 设置页 -->
     <string name="settings_title">设置</string>
