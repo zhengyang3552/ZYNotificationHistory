@@ -193,6 +193,7 @@ class NotificationAdapter(
         private val tvCount: TextView = itemView.findViewById(R.id.tv_count)
         private val ivChevron: ImageView = itemView.findViewById(R.id.iv_chevron)
         private val frontCard: View = itemView.findViewById(R.id.stack_front)
+        private val toggleBar: View = itemView.findViewById(R.id.stack_toggle)
 
         /** 展开行的时间视图引用，供相对时间局部刷新复用 */
         private val entryTimeViews = mutableListOf<Pair<NotificationEntity, TextView>>()
@@ -219,10 +220,11 @@ class NotificationAdapter(
 
             tvCount.text = context.getString(R.string.stack_count, item.records.size)
 
-            // 正面卡片（最新一条消息）= 打开详情，与单条卡片行为一致；
-            // 卡片其余区域（计数/展开箭头行、顶部外露边缘）= 展开/收起堆叠。
-            // 注意：正面卡片是可点击子视图，会消费自己区域内的点击，
-            // 不会与根视图的展开/收起冲突。
+            // 点击分区（自内向外优先消费）：
+            // - 底部切换条（标签/计数/箭头整行）= 展开/收起；
+            // - 正面卡片消息内容区 = 打开最新一条详情；
+            // - 其余区域（顶部外露边缘等）落到根视图 = 展开/收起兜底。
+            toggleBar.setOnClickListener { toggleExpand(item) }
             frontCard.setOnClickListener { onRecordClick(latest) }
             frontCard.setOnLongClickListener {
                 onRecordLongClick(latest)

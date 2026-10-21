@@ -129,11 +129,14 @@
                 android:textAppearance="?attr/textAppearanceBodyMedium"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
-            <!-- 底部：状态标签 + 计数 + 展开指示 -->
+            <!-- 底部展开切换条：整行可点（展开/收起），与正面卡片的「打开详情」分区 -->
             <LinearLayout
+                android:id="@+id/stack_toggle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_md"
+                android:background="?attr/selectableItemBackground"
+                android:minHeight="@dimen/min_touch_target"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
