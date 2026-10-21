@@ -2,27 +2,98 @@
 <resources>
     <string name="app_name">通知历史查看器</string>
 
-    <!-- Settings strings -->
+    <!-- 主界面 -->
+    <string name="main_title">通知历史</string>
+    <string name="main_subtitle_recording">正在监听 · %1$d 条记录</string>
+    <string name="main_subtitle_idle">未开启通知使用权</string>
+    <string name="menu_search">搜索</string>
+    <string name="menu_settings">设置</string>
+    <string name="search_hint">搜索应用、标题或内容</string>
+
+    <!-- 权限提示 -->
+    <string name="permission_title_needed">需要「通知使用权」</string>
+    <string name="permission_message_needed">开启后即可读取通知栏消息，记录仅保存在本机。</string>
+    <string name="permission_action_enable">去开启</string>
+    <string name="permission_settings_unavailable">未找到通知使用权设置页，请手动前往系统设置</string>
+
+    <!-- 空状态 -->
+    <string name="empty_title">暂无通知记录</string>
+    <string name="empty_message">开启通知使用权后，收到的通知会自动出现在这里</string>
+    <string name="empty_message_filtered">没有匹配「%1$s」的记录</string>
+    <string name="empty_action">去开启</string>
+
+    <!-- 列表项 -->
+    <string name="tag_ongoing">常驻</string>
+    <string name="tag_normal">临时</string>
+    <string name="tag_removed">已移除</string>
+    <string name="content_placeholder">（无正文内容）</string>
+    <string name="unknown_app">未知应用</string>
+
+    <!-- 详情与操作 -->
+    <string name="detail_title">通知详情</string>
+    <string name="detail_app">应用</string>
+    <string name="detail_package">包名</string>
+    <string name="detail_time">接收时间</string>
+    <string name="detail_content">内容</string>
+    <string name="detail_state">状态</string>
+    <string name="action_copy">复制内容</string>
+    <string name="action_delete">删除</string>
+    <string name="action_detail">查看详情</string>
+    <string name="action_clear">清空</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_undo">撤销</string>
+
+    <!-- 清空确认 -->
+    <string name="dialog_clear_title">清空全部记录？</string>
+    <string name="dialog_clear_message">共 %1$d 条通知记录将被永久删除，此操作不可撤销。</string>
+    <string name="msg_cleared">已清空 %1$d 条记录</string>
+    <string name="msg_deleted">已删除 1 条记录</string>
+    <string name="msg_restored">已恢复记录</string>
+    <string name="msg_clipboard">已复制到剪贴板</string>
+    <string name="msg_empty_content">该通知没有可复制的内容</string>
+
+    <!-- 底部导航 -->
+    <string name="nav_home">通知</string>
+    <string name="nav_settings">设置</string>
+
+    <!-- 设置页 -->
     <string name="settings_title">设置</string>
-    <string name="settings_section_ui">用户界面</string>
-    <string name="settings_section_time">显示</string>
-    <string name="settings_section_about">关于本 App</string>
+    <string name="settings_section_appearance">外观</string>
+    <string name="settings_section_content">显示内容</string>
+    <string name="settings_section_permission">通知使用权</string>
+    <string name="settings_section_storage">存储</string>
+    <string name="settings_section_about">关于</string>
 
-    <!-- Theme settings -->
-    <string name="settings_theme">主题</string>
-    <string name="settings_theme_summary">选择应用的主题样式</string>
+    <string name="settings_theme">主题模式</string>
+    <string name="settings_theme_summary">选择应用的明暗模式，跟随系统时会随系统切换</string>
     <string name="settings_theme_system">跟随系统</string>
-    <string name="settings_theme_light">浅色主题</string>
-    <string name="settings_theme_dark">黑色主题</string>
+    <string name="settings_theme_light">浅色</string>
+    <string name="settings_theme_dark">深色</string>
 
-    <!-- Time format settings -->
-    <string name="settings_time_format">时间显示样式</string>
-    <string name="settings_time_format_summary">选择通知列表中的时间显示方式</string>
+    <string name="settings_time_format">时间格式</string>
+    <string name="settings_time_format_summary">列表中通知时间的显示方式</string>
     <string name="settings_time_relative">相对时间</string>
     <string name="settings_time_absolute">精确时间</string>
-    <string name="settings_time_relative_summary">显示如"3分钟前"的相对时间</string>
-    <string name="settings_time_absolute_summary">显示"yyyy-MM-dd HH:mm:ss"格式</string>
 
-    <!-- Version info -->
-    <string name="settings_version">版本</string>
+    <string name="settings_show_package">显示应用包名</string>
+    <string name="settings_show_package_summary">在通知条目中显示来源应用的包名</string>
+
+    <string name="settings_retention">保留记录上限</string>
+    <string name="settings_retention_summary">超过上限时自动清理最早的通知，避免占用过多空间</string>
+    <string name="settings_retention_unit">%1$d 条</string>
+    <string name="settings_retention_unlimited">不限制</string>
+    <string name="settings_retention_dialog_title">保留记录上限</string>
+
+    <string name="settings_permission_granted">已开启</string>
+    <string name="settings_permission_denied">未开启</string>
+    <string name="settings_permission_summary">用于读取通知栏消息，权限仅授权给本应用</string>
+    <string name="settings_permission_action">系统设置</string>
+
+    <string name="settings_record_count">本地已存 %1$d 条记录</string>
+    <string name="settings_clear_all">清空全部记录</string>
+    <string name="settings_clear_summary">删除本机保存的所有通知记录</string>
+
+    <string name="settings_version">版本 %1$s</string>
+    <string name="settings_version_unknown">版本未知</string>
+    <string name="settings_storage_local">仅本地存储 · 不联网</string>
 </resources>

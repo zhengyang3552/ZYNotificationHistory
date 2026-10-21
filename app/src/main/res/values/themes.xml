@@ -1,57 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Material 3 (Material You) Light Theme - follows system dark/light preference -->
-    <style name="Theme.NotificationHistory" parent="Theme.Material3.DayNight.NoActionBar">
+
+    <!--
+      Material 3 语义色映射（浅色）
+      取值来自 values/colors.xml 中由 Material Color Utilities 生成的
+      SchemeTonalSpot(种子色 #00696E) 结果，主题层只负责“色调角色 -> 主题属性”的转接，
+      UI 层一律引用主题属性（?attr/...），不得直接写死十六进制。
+    -->
+    <style name="Theme.NotificationHistory.Base" parent="Theme.Material3.DayNight.NoActionBar">
+
         <!-- Primary -->
         <item name="colorPrimary">@color/md_theme_primary</item>
-        <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
-        <item name="colorPrimaryContainer">@color/md_theme_primaryContainer</item>
-        <item name="colorOnPrimaryContainer">@color/md_theme_onPrimaryContainer</item>
+        <item name="colorOnPrimary">@color/md_theme_on_primary</item>
+        <item name="colorPrimaryContainer">@color/md_theme_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_on_primary_container</item>
+        <item name="colorPrimaryInverse">@color/md_theme_inverse_primary</item>
 
         <!-- Secondary -->
         <item name="colorSecondary">@color/md_theme_secondary</item>
-        <item name="colorOnSecondary">@color/md_theme_onSecondary</item>
-        <item name="colorSecondaryContainer">@color/md_theme_secondaryContainer</item>
-        <item name="colorOnSecondaryContainer">@color/md_theme_onSecondaryContainer</item>
+        <item name="colorOnSecondary">@color/md_theme_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/md_theme_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/md_theme_on_secondary_container</item>
 
         <!-- Tertiary -->
         <item name="colorTertiary">@color/md_theme_tertiary</item>
-        <item name="colorOnTertiary">@color/md_theme_onTertiary</item>
-        <item name="colorTertiaryContainer">@color/md_theme_tertiaryContainer</item>
-        <item name="colorOnTertiaryContainer">@color/md_theme_onTertiaryContainer</item>
+        <item name="colorOnTertiary">@color/md_theme_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/md_theme_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/md_theme_on_tertiary_container</item>
 
         <!-- Error -->
         <item name="colorError">@color/md_theme_error</item>
-        <item name="colorOnError">@color/md_theme_onError</item>
-        <item name="colorErrorContainer">@color/md_theme_errorContainer</item>
-        <item name="colorOnErrorContainer">@color/md_theme_onErrorContainer</item>
+        <item name="colorOnError">@color/md_theme_on_error</item>
+        <item name="colorErrorContainer">@color/md_theme_error_container</item>
+        <item name="colorOnErrorContainer">@color/md_theme_on_error_container</item>
 
-        <!-- Surface & Background -->
+        <!-- Background / Surface -->
         <item name="android:colorBackground">@color/md_theme_background</item>
-        <item name="colorOnBackground">@color/md_theme_onBackground</item>
+        <item name="colorOnBackground">@color/md_theme_on_background</item>
         <item name="colorSurface">@color/md_theme_surface</item>
-        <item name="colorOnSurface">@color/md_theme_onSurface</item>
-        <item name="colorSurfaceVariant">@color/md_theme_surfaceVariant</item>
-        <item name="colorOnSurfaceVariant">@color/md_theme_onSurfaceVariant</item>
+        <item name="colorOnSurface">@color/md_theme_on_surface</item>
+        <item name="colorSurfaceVariant">@color/md_theme_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_on_surface_variant</item>
+        <item name="colorSurfaceInverse">@color/md_theme_inverse_surface</item>
+        <item name="colorOnSurfaceInverse">@color/md_theme_inverse_on_surface</item>
 
-        <!-- Surface variants for M3 chips -->
-        <item name="colorSurfaceInverse">@color/md_theme_inverseSurface</item>
-        <item name="colorOnSurfaceInverse">@color/md_theme_inverseOnSurface</item>
+        <!-- Surface container 阶梯：用容器色表达层级，替代“靠阴影堆叠”的旧做法 -->
+        <item name="colorSurfaceDim">@color/md_theme_surface_dim</item>
+        <item name="colorSurfaceBright">@color/md_theme_surface_bright</item>
+        <item name="colorSurfaceContainerLowest">@color/md_theme_surface_container_lowest</item>
+        <item name="colorSurfaceContainerLow">@color/md_theme_surface_container_low</item>
+        <item name="colorSurfaceContainer">@color/md_theme_surface_container</item>
+        <item name="colorSurfaceContainerHigh">@color/md_theme_surface_container_high</item>
+        <item name="colorSurfaceContainerHighest">@color/md_theme_surface_container_highest</item>
 
         <!-- Outline -->
         <item name="colorOutline">@color/md_theme_outline</item>
-        <item name="colorOutlineVariant">@color/md_theme_outlineVariant</item>
+        <item name="colorOutlineVariant">@color/md_theme_outline_variant</item>
 
-        <!-- Status bar / Navigation bar -->
+        <!-- 系统栏：透明，图标深浅由 windowLight* 控制 -->
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowBackground">@color/md_theme_background</item>
 
-        <!-- Enable automatic dark mode switching (follows system) -->
-        <item name="android:forceDarkAllowed">true</item>
+        <!-- M3 用容器色表达高度层级，关闭 MD2 的 elevation overlay 以保持色值纯净 -->
+        <item name="elevationOverlayEnabled">false</item>
 
-        <!-- M3 specific attributes -->
-        <item name="chipStyle">@style/Widget.Material3.Chip.Filter</item>
     </style>
+
+
+    <!-- 派生主题：默认无额外内容，导航栏外观由 values-v27 / values-night-v27 按 API 分级覆盖 -->
+    <style name="Theme.NotificationHistory" parent="Theme.NotificationHistory.Base" />
+
 </resources>

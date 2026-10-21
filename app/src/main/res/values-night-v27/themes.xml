@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- API 27+ 深色模式：导航栏透明 + 浅色导航图标 -->
+    <style name="Theme.NotificationHistory" parent="Theme.NotificationHistory.Base">
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
+</resources>

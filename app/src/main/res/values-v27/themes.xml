@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+      API 27+：导航栏透明 + 深色导航图标。
+      这两个属性分别要求 API 27 / 29，放在版本化资源里而不是用 tools:ignore 抑制，
+      低版本设备则沿用系统默认导航栏（黑底白图标），不会出现图标不可见的问题。
+    -->
+    <style name="Theme.NotificationHistory" parent="Theme.NotificationHistory.Base">
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+
+</resources>
