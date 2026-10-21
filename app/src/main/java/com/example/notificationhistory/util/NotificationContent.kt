@@ -25,6 +25,9 @@ object NotificationContent {
     private const val MAX_TEXT_LENGTH = 2_000
     private const val MAX_TITLE_LENGTH = 200
 
+    /** 微信等应用合并连续消息时，会在正文前自动加 "[N条]" 前缀，如 "[21条]张三: 你好" */
+    private val GROUPED_COUNT_PREFIX = Regex("^\\[\\d+条\\]\\s*")
+
     data class Text(val title: String, val content: String)
 
     fun extract(sbn: StatusBarNotification?): Text {
@@ -46,7 +49,10 @@ object NotificationContent {
 
         return Text(
             title = (title ?: "").take(MAX_TITLE_LENGTH),
-            content = (content ?: "").take(MAX_TEXT_LENGTH)
+            content = content
+                ?.replace(GROUPED_COUNT_PREFIX, "")
+                ?.take(MAX_TEXT_LENGTH)
+                ?: ""
         )
     }
 

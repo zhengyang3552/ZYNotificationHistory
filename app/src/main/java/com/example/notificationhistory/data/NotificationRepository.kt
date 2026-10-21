@@ -9,7 +9,9 @@ import kotlinx.coroutines.flow.Flow
  *
  * 关键规则：
  * 1. 同一 [NotificationEntity.key] 再次上报视为同一条通知的更新（进度条、聊天串、常驻通知
- *    都会复用同一个 key），只刷新文案与状态，保留首次记录时间，避免列表在后台更新时来回跳动；
+ *    都会复用同一个 key），只刷新文案与状态；内容有变化且非常驻时把时间刷新为当前时间
+ *    （微信等连续消息的通知 postTime 停留在第一条，需记为最后一条的接收时间），
+ *    常驻通知保留首次记录时间，避免列表在后台更新时来回跳动；
  * 2. 常驻通知在部分应用上每次刷新都会换 key，因此再按包名兜底匹配，避免同一常驻通知刷出多条；
  * 3. 所有写操作放在事务里，配合 IGNORE 插入策略，重复上报不会抛约束异常。
  */
@@ -26,14 +28,26 @@ class NotificationRepository(context: Context) {
         database.withTransaction {
             val byKey = dao.findByKey(entity.key)
             when {
-                byKey != null -> dao.update(
-                    byKey.copy(
-                        title = entity.title,
-                        content = entity.content,
-                        isOngoing = entity.isOngoing,
-                        isDeleted = false
+                byKey != null -> {
+                    val changed = byKey.title != entity.title || byKey.content != entity.content
+                    dao.update(
+                        byKey.copy(
+                            title = entity.title,
+                            content = entity.content,
+                            isOngoing = entity.isOngoing,
+                            isDeleted = false,
+                            // 聊天类通知（如微信连续消息）原地更新时，通知自带的 postTime
+                            // 仍停留在第一条消息的时间；内容有变化说明来了新消息，
+                            // 改用当前时间，保证记录的是最后一条消息的接收时间。
+                            // 常驻通知（下载进度等）保持首次记录时间，避免列表来回跳动。
+                            timestamp = if (changed && !byKey.isOngoing && !entity.isOngoing) {
+                                System.currentTimeMillis()
+                            } else {
+                                byKey.timestamp
+                            }
+                        )
                     )
-                )
+                }
 
                 entity.isOngoing -> {
                     val ongoing = dao.findActiveOngoingByPackage(entity.packageName)
