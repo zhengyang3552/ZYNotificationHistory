@@ -97,12 +97,33 @@ export KEY_PASSWORD="your_key_password"
 
 ## ⚙️ CI/CD
 
-本项目使用 GitHub Actions 进行持续集成。
-每次推送到 `main` 分支或提交 Pull Request 时，CI 会自动执行以下操作：
+`.github/workflows/ci.yml` 负责在云端完成编译，本地无需安装 Android SDK 也能拿到 APK。
 
-1. 构建 Debug 和 Release 版本
-2. 运行 Lint 代码检查
-3. 上传构建产物作为 Artifact
+**触发条件**：推送到 `main`、提交 PR 到 `main`、推送 `v*` 标签、手动 `workflow_dispatch`。
+同一分支的新提交会取消上一次未完成的运行（`concurrency`）。
+
+**流水线步骤**：
+
+1. `actions/setup-java@v4` 安装 JDK 17（Temurin）
+2. `android-actions/setup-android@v3` 安装 SDK 并安装 `platforms;android-34`、`build-tools;34.0.0`
+3. `gradle/actions/setup-gradle@v4` 缓存 Gradle Wrapper 与依赖
+4. `assembleDebug` → `lintDebug`（Lint 有 error 时构建失败，作为质量门禁）→ `assembleRelease`
+5. 上传 `apk-*` 与 `lint-report-*` 两个 Artifact，并写入运行摘要
+
+**下载编译产物**：进入 Actions 运行详情页 → 页面底部 **Artifacts** → 下载 `apk-<分支/标签>-<sha>`，解压后即得到 `app-debug.apk` / `app-release.apk`。
+
+**签名配置（可选）**：仓库内置了演示用 `app/release.keystore`，CI 会直接用它签出 Release 包。
+正式发布建议改为仓库 Secrets，工作流会自动优先使用：
+
+| Secret | 说明 |
+| --- | --- |
+| `KEYSTORE_BASE64` | keystore 文件的 base64 文本（`base64 -w0 release.keystore`） |
+| `KEYSTORE_PASSWORD` | keystore 密码 |
+| `KEY_ALIAS` | key 别名 |
+| `KEY_PASSWORD` | key 密码 |
+
+未配置 `KEYSTORE_BASE64` 时仍会使用仓库内的 keystore；若两者都不存在，则只构建 Debug 包。
+
 
 ## 📝 变更记录
 
