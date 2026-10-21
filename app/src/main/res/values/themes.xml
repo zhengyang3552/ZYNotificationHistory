@@ -49,8 +49,8 @@
         <!-- 该属性需要 API 27，低版本系统自动忽略，标注 targetApi 消除 lint NewApi -->
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
 
-        <!-- Enable automatic dark mode switching (follows system) -->
-        <item name="android:forceDarkAllowed">true</item>
+        <!-- 该属性需要 API 29，低版本系统自动忽略，标注 targetApi 消除 lint NewApi -->
+        <item name="android:forceDarkAllowed" tools:targetApi="q">true</item>
 
         <!-- M3 specific attributes -->
         <item name="chipStyle">@style/Widget.Material3.Chip.Filter</item>

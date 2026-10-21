@@ -264,7 +264,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_agenda"
-                android:tint="#A89A8E"
+                app:tint="#A89A8E"
                 android:contentDescription="@null" />
 
             <TextView
@@ -290,7 +290,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_manage"
-                android:tint="#A89A8E"
+                app:tint="#A89A8E"
                 android:contentDescription="@null" />
 
             <TextView
@@ -316,7 +316,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_preferences"
-                android:tint="#D4A87C"
+                app:tint="#D4A87C"
                 android:contentDescription="@null" />
 
             <TextView
