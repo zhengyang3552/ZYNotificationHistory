@@ -45,6 +45,13 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            // CI 提供签名环境（KEYSTORE_PATH）时，debug 包同样使用固定签名，
+            // 与 release 包同证书，保证 debug → release 可覆盖升级
+            if (System.getenv('KEYSTORE_PATH') != null) {
+                signingConfig signingConfigs.release
+            }
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
