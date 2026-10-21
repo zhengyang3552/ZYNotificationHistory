@@ -41,6 +41,18 @@ interface NotificationDao {
     )
     suspend fun findActiveOngoingByPackage(packageName: String): NotificationEntity?
 
+    /** 同应用同名会话的最新一条普通记录，用于重复上报（重连重放）去重 */
+    @Query(
+        """
+        SELECT * FROM notifications
+        WHERE packageName = :packageName AND title = :title
+          AND isOngoing = 0 AND isDeleted = 0
+        ORDER BY timestamp DESC
+        LIMIT 1
+        """
+    )
+    suspend fun findLatestByPackageAndTitle(packageName: String, title: String): NotificationEntity?
+
     /**
      * IGNORE：同一 key 重复上报时不再抛 SQLiteConstraintException
      *（改造前使用纯 @Insert + key 唯一索引，通知更新会直接抛异常导致整条记录丢失）。

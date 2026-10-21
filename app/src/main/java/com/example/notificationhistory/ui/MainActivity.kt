@@ -121,8 +121,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         adapter = NotificationAdapter(
-            onItemClick = { record -> showDetail(record) },
-            onItemLongClick = { record -> showActions(record) }
+            onRecordClick = { record -> showDetail(record) },
+            onRecordLongClick = { record -> showActions(record) }
         )
 
         binding.recyclerView.apply {
@@ -148,8 +148,11 @@ class MainActivity : AppCompatActivity() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.bindingAdapterPosition
                 if (position == RecyclerView.NO_POSITION) return
-                val record = adapter.currentList.getOrNull(position) ?: return
-                deleteWithUndo(record)
+                when (val item = adapter.currentList.getOrNull(position)) {
+                    is DisplayItem.Stack -> deleteGroupWithUndo(item)
+                    is DisplayItem.Single -> item.record.let(::deleteWithUndo)
+                    null -> Unit
+                }
             }
         }
         ItemTouchHelper(swipeCallback).attachToRecyclerView(binding.recyclerView)
@@ -212,7 +215,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun render(state: MainUiState) {
-        adapter.submitList(state.records)
+        adapter.submitList(state.displayItems)
 
         binding.recyclerView.isVisible = state.hasRecords
         binding.emptyState.isVisible = !state.hasRecords
@@ -283,6 +286,21 @@ class MainActivity : AppCompatActivity() {
         Snackbar.make(binding.root, R.string.msg_deleted, Snackbar.LENGTH_LONG)
             .setAction(R.string.action_undo) {
                 viewModel.restore(record)
+                showMessage(getString(R.string.msg_restored))
+            }
+            .show()
+    }
+
+    /** 堆叠卡片侧滑：删除整组记录，撤销时整组恢复 */
+    private fun deleteGroupWithUndo(item: DisplayItem.Stack) {
+        viewModel.delete(item.records)
+        Snackbar.make(
+            binding.root,
+            getString(R.string.msg_deleted_group, item.records.size),
+            Snackbar.LENGTH_LONG
+        )
+            .setAction(R.string.action_undo) {
+                viewModel.restore(item.records)
                 showMessage(getString(R.string.msg_restored))
             }
             .show()

@@ -9,9 +9,9 @@ import kotlinx.coroutines.flow.Flow
  *
  * 关键规则：
  * 1. 同一 [NotificationEntity.key] 再次上报视为同一条通知的更新（进度条、聊天串、常驻通知
- *    都会复用同一个 key），只刷新文案与状态；内容有变化且非常驻时把时间刷新为当前时间
- *    （微信等连续消息的通知 postTime 停留在第一条，需记为最后一条的接收时间），
- *    常驻通知保留首次记录时间，避免列表在后台更新时来回跳动；
+ *    都会复用同一个 key）。常驻通知只刷新文案与状态、保留首次记录时间；
+ *    聊天类连续消息（微信/QQ 等）内容有变化时追加为新记录（派生唯一 key），
+ *    已显示的消息内容与时间保持不变，由列表层按应用堆叠展示；
  * 2. 常驻通知在部分应用上每次刷新都会换 key，因此再按包名兜底匹配，避免同一常驻通知刷出多条；
  * 3. 所有写操作放在事务里，配合 IGNORE 插入策略，重复上报不会抛约束异常。
  */
@@ -28,23 +28,34 @@ class NotificationRepository(context: Context) {
         database.withTransaction {
             val byKey = dao.findByKey(entity.key)
             when {
-                byKey != null -> {
-                    val changed = byKey.title != entity.title || byKey.content != entity.content
-                    dao.update(
-                        byKey.copy(
-                            title = entity.title,
-                            content = entity.content,
-                            isOngoing = entity.isOngoing,
-                            isDeleted = false,
-                            // 聊天类通知（如微信连续消息）原地更新时，通知自带的 postTime
-                            // 仍停留在第一条消息的时间；内容有变化说明来了新消息，
-                            // 改用当前时间，保证记录的是最后一条消息的接收时间。
-                            // 常驻通知（下载进度等）保持首次记录时间，避免列表来回跳动。
-                            timestamp = if (changed && !byKey.isOngoing && !entity.isOngoing) {
-                                System.currentTimeMillis()
-                            } else {
-                                byKey.timestamp
-                            }
+                byKey != null -> when {
+                    // 常驻通知（下载进度等）原地刷新：只更新文案与状态，
+                    // 保持首次记录时间，避免列表在后台更新时来回跳动
+                    byKey.isOngoing || entity.isOngoing -> {
+                        dao.update(
+                            byKey.copy(
+                                title = entity.title,
+                                content = entity.content,
+                                isOngoing = entity.isOngoing,
+                                isDeleted = false
+                                // 保持首次记录时间，列表不跳动
+                            )
+                        )
+                    }
+
+                    // 内容与该应用该会话最新一条相同：系统重连重放等重复上报，直接忽略
+                    // （与最新一条而非首条比对，避免误吞连续两条内容相同的消息）
+                    dao.findLatestByPackageAndTitle(entity.packageName, entity.title)
+                        ?.let { it.content == entity.content } == true -> Unit
+
+                    // 聊天类连续消息（微信/QQ 等原地更新同一条通知）：
+                    // 追加为一条新记录，已显示的消息内容和时间保持不变，
+                    // 由列表按应用堆叠展示、默认露出最新一条
+                    else -> dao.insertIgnore(
+                        entity.copy(
+                            id = 0,
+                            key = "${entity.key}#${System.currentTimeMillis()}",
+                            timestamp = System.currentTimeMillis()
                         )
                     )
                 }

@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
  */
 data class MainUiState(
     val records: List<NotificationEntity> = emptyList(),
+    val displayItems: List<DisplayItem> = emptyList(),
     val totalCount: Int = 0,
     val ongoingCount: Int = 0,
     val query: String = "",
@@ -56,8 +57,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val uiState: StateFlow<MainUiState> =
         combine(allRecords, queryFlow, loadedFlow) { records, query, loaded ->
+            val filtered = filter(records, query)
             MainUiState(
-                records = filter(records, query),
+                records = filtered,
+                displayItems = DisplayItem.from(filtered),
                 totalCount = records.size,
                 ongoingCount = records.count { it.isOngoing && !it.isDeleted },
                 query = query,
@@ -83,9 +86,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /** 堆叠卡片侧滑：删除整组记录 */
+    fun delete(records: List<NotificationEntity>) {
+        viewModelScope.launch {
+            runCatching { records.forEach { repository.delete(it.id) } }
+        }
+    }
+
     fun restore(record: NotificationEntity) {
         viewModelScope.launch {
             runCatching { repository.restore(record) }
+        }
+    }
+
+    /** 撤销堆叠卡片删除：整组恢复 */
+    fun restore(records: List<NotificationEntity>) {
+        viewModelScope.launch {
+            runCatching { records.forEach { repository.restore(it) } }
         }
     }
 
