@@ -192,6 +192,7 @@ class NotificationAdapter(
         private val tvTime: TextView = itemView.findViewById(R.id.tv_time)
         private val tvCount: TextView = itemView.findViewById(R.id.tv_count)
         private val ivChevron: ImageView = itemView.findViewById(R.id.iv_chevron)
+        private val frontCard: View = itemView.findViewById(R.id.stack_front)
 
         /** 展开行的时间视图引用，供相对时间局部刷新复用 */
         private val entryTimeViews = mutableListOf<Pair<NotificationEntity, TextView>>()
@@ -218,7 +219,15 @@ class NotificationAdapter(
 
             tvCount.text = context.getString(R.string.stack_count, item.records.size)
 
-            // 点击卡片 = 展开/收起；长按 = 对最新一条操作
+            // 正面卡片（最新一条消息）= 打开详情，与单条卡片行为一致；
+            // 卡片其余区域（计数/展开箭头行、顶部外露边缘）= 展开/收起堆叠。
+            // 注意：正面卡片是可点击子视图，会消费自己区域内的点击，
+            // 不会与根视图的展开/收起冲突。
+            frontCard.setOnClickListener { onRecordClick(latest) }
+            frontCard.setOnLongClickListener {
+                onRecordLongClick(latest)
+                true
+            }
             itemView.setOnClickListener { toggleExpand(item) }
             itemView.setOnLongClickListener {
                 onRecordLongClick(latest)

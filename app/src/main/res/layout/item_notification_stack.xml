@@ -41,11 +41,13 @@
             android:alpha="0.70"
             android:background="@drawable/bg_stack_layer" />
 
-        <!-- 正面卡片：最新一条通知 -->
+        <!-- 正面卡片：最新一条通知；点击打开详情（与单条卡片一致） -->
         <LinearLayout
+            android:id="@+id/stack_front"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_stack_front"
+            android:foreground="?attr/selectableItemBackground"
             android:orientation="vertical"
             android:padding="@dimen/space_lg">
 
