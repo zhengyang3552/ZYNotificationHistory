@@ -2,9 +2,9 @@ name: CI
 
 # 统一 Android CI 规范（与 ZYEmail / RemoteFileManager 同构）：
 #   push main / v* 标签 / PR / 手动触发；质量门(build) -> lint -> release 三段。
-# Release 签名改为从 GitHub Secrets 注入（仓库 Secrets 配置 KEYSTORE_BASE64 /
-# KEYSTORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD），不再依赖本地 keystore 文件；
-# 未配置 Secret 时自动产出 unsigned 包，仅验证 release 构建可通过。
+# Release 签名优先从 GitHub Secrets 注入（KEYSTORE_BASE64 / KEYSTORE_PASSWORD /
+# KEY_ALIAS / KEY_PASSWORD），不再依赖本地 keystore 文件；未配置 Secret 时
+# 自动生成临时 keystore 完成构建（产物可验证构建但不可上架）。
 
 on:
   push:
@@ -199,22 +199,31 @@ jobs:
               "build-tools;${ANDROID_BUILD_TOOLS}" > /dev/null
           fi
 
-      # build.gradle 的 signingConfigs 从 KEYSTORE_PATH 等环境变量读取。
-      # 已配置 KEYSTORE_BASE64 Secret 时解码为 keystore（签名包）；
-      # 未配置时跳过，产物为 unsigned 包（仅验证 release 构建可通过）。
-      - name: 还原签名 keystore（如已配置 Secret）
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+      # build.gradle 的 signingConfigs 无条件读取 KEYSTORE_PATH 等环境变量，
+      # 且 secrets 上下文不能用于 if 条件，所以这里不用 if 分支，而是在脚本内判断：
+      # 已配置 KEYSTORE_BASE64 Secret -> 解码正式 keystore；
+      # 未配置 -> keytool 现场生成临时 keystore，保证 assembleRelease 一定能过
+      # （临时签名的包仅验证可构建，不可上架，日志会有 warning 提示）。
+      - name: 准备签名 keystore
         env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "${KEYSTORE_BASE64}" | base64 -d > app/release.keystore
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > app/release.keystore
+            echo "使用 Secret 中的正式 keystore"
+          else
+            keytool -genkeypair -v -keystore app/release.keystore \
+              -storepass zy-ci-temp-2026 -keypass zy-ci-temp-2026 \
+              -alias zy-ci-temp -keyalg RSA -keysize 2048 -validity 30 \
+              -dname "CN=ZY CI Temporary" > /dev/null 2>&1
+            echo "KEYSTORE_PASSWORD=zy-ci-temp-2026" >> "$GITHUB_ENV"
+            echo "KEY_ALIAS=zy-ci-temp" >> "$GITHUB_ENV"
+            echo "KEY_PASSWORD=zy-ci-temp-2026" >> "$GITHUB_ENV"
+            echo "::warning::未配置 KEYSTORE_BASE64 等 Secret，本次 Release 使用临时 keystore 签名，不可用于上架"
+          fi
           echo "KEYSTORE_PATH=app/release.keystore" >> "$GITHUB_ENV"
 
       - name: 构建 Release APK
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew --no-daemon --stacktrace assembleRelease
 
       - name: 重命名 APK（带版本号）
