@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: temurin
@@ -95,7 +95,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: apk-${{ github.ref_name }}-${{ github.sha }}
+          # PR 事件的 ref_name 是 "16/merge" 这类含 / 的值，artifact 名不允许斜杠，改用编号
+          name: apk-${{ github.event.pull_request.number || github.run_number }}-${{ github.sha }}
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/release/*.apk
