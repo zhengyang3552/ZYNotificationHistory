@@ -33,6 +33,8 @@ class SettingsActivity : AppCompatActivity() {
         // Apply theme BEFORE super.onCreate to avoid flicker
         applySavedTheme()
 
+        // 动态取色需在视图创建前应用
+        DynamicColor.apply(this)
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -92,6 +94,13 @@ class SettingsActivity : AppCompatActivity() {
                 }
             }
             // Restart activity to apply theme change
+            recreate()
+        }
+
+        // 动态取色开关：保存偏好后重建界面立即生效（Android 12 以下无视觉效果）
+        binding.switchDynamicColor.isChecked = DynamicColor.enabled(this)
+        binding.switchDynamicColor.setOnCheckedChangeListener { _, checked ->
+            DynamicColor.setEnabled(this, checked)
             recreate()
         }
 

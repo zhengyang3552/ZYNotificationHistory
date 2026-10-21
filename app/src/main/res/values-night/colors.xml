@@ -1,43 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Material 3 颜色令牌 · 深色方案
+    由统一设计规范生成：material-color-utilities（HCT）+ 统一品牌种子色 #0B57D0，
+    与 ZYEmail / RemoteFileManager 的配色同源，请勿手工逐条修改。
+-->
 <resources>
-    <!-- Material 3 - Dark Theme Standard Colors -->
-    <color name="md_theme_primary">#D0BCFF</color>
-    <color name="md_theme_onPrimary">#381E72</color>
-    <color name="md_theme_primaryContainer">#4F378B</color>
-    <color name="md_theme_onPrimaryContainer">#EADDFF</color>
+    <!-- Material 3 Dark Theme - Unified Blue Palette -->
+    <color name="md_theme_primary">#FFB2C5FF</color>
+    <color name="md_theme_onPrimary">#FF002B72</color>
+    <color name="md_theme_primaryContainer">#FF0040A1</color>
+    <color name="md_theme_onPrimaryContainer">#FFDAE2FF</color>
 
-    <color name="md_theme_secondary">#CCC2DC</color>
-    <color name="md_theme_onSecondary">#332D41</color>
-    <color name="md_theme_secondaryContainer">#4A4458</color>
-    <color name="md_theme_onSecondaryContainer">#E8DEF8</color>
+    <color name="md_theme_secondary">#FFC0C6DD</color>
+    <color name="md_theme_onSecondary">#FF2A3042</color>
+    <color name="md_theme_secondaryContainer">#FF404659</color>
+    <color name="md_theme_onSecondaryContainer">#FFDCE2F9</color>
 
-    <color name="md_theme_tertiary">#EFB8C8</color>
-    <color name="md_theme_onTertiary">#492532</color>
-    <color name="md_theme_tertiaryContainer">#633B48</color>
-    <color name="md_theme_onTertiaryContainer">#FFD8E4</color>
+    <color name="md_theme_tertiary">#FFE1BBDD</color>
+    <color name="md_theme_onTertiary">#FF412741</color>
+    <color name="md_theme_tertiaryContainer">#FF5A3D59</color>
+    <color name="md_theme_onTertiaryContainer">#FFFED7F9</color>
 
-    <color name="md_theme_error">#F2B8B5</color>
-    <color name="md_theme_onError">#601410</color>
-    <color name="md_theme_errorContainer">#8C1D18</color>
-    <color name="md_theme_onErrorContainer">#F9DEDC</color>
+    <color name="md_theme_error">#FFFFB4AA</color>
+    <color name="md_theme_onError">#FF690003</color>
+    <color name="md_theme_errorContainer">#FF910809</color>
+    <color name="md_theme_onErrorContainer">#FFFFDAD5</color>
 
-    <color name="md_theme_background">#1C1B1F</color>
-    <color name="md_theme_onBackground">#E6E1E5</color>
-    <color name="md_theme_surface">#1C1B1F</color>
-    <color name="md_theme_onSurface">#E6E1E5</color>
-    <color name="md_theme_surfaceVariant">#49454F</color>
-    <color name="md_theme_onSurfaceVariant">#CAC4D0</color>
+    <color name="md_theme_background">#FF131316</color>
+    <color name="md_theme_onBackground">#FFE4E2E6</color>
+    <color name="md_theme_surface">#FF131316</color>
+    <color name="md_theme_onSurface">#FFE4E2E6</color>
+    <color name="md_theme_surfaceVariant">#FF45464F</color>
+    <color name="md_theme_onSurfaceVariant">#FFC5C6D0</color>
 
-    <color name="md_theme_outline">#938F99</color>
-    <color name="md_theme_outlineVariant">#605D66</color>
+    <color name="md_theme_outline">#FF8F909A</color>
+    <color name="md_theme_outlineVariant">#FF45464F</color>
 
     <!-- Inverse colors for M3 chips and surface variants -->
-    <color name="md_theme_inverseSurface">#E6E1E5</color>
-    <color name="md_theme_inverseOnSurface">#313033</color>
+    <color name="md_theme_inverseSurface">#FFE4E2E6</color>
+    <color name="md_theme_inverseOnSurface">#FF303034</color>
 
-    <!-- Status colors for programmatic use -->
-    <color name="status_enabled">#81C784</color>
-    <color name="status_disabled">#EF5350</color>
+    <!-- Status colors that adapt to theme -->
+    <color name="status_enabled">#FF85D98E</color>
+    <color name="status_disabled">#FFFFB4AA</color>
 
     <!-- Legacy compatibility -->
     <color name="black">#000000</color>

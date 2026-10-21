@@ -15,6 +15,10 @@
     <string name="settings_theme_light">浅色主题</string>
     <string name="settings_theme_dark">黑色主题</string>
 
+    <!-- 动态取色（Android 12+ 壁纸取色） -->
+    <string name="settings_dynamic_color">动态取色</string>
+    <string name="settings_dynamic_color_summary">跟随系统壁纸自动生成配色（Android 12 及以上可用，关闭后使用统一品牌色）</string>
+
     <!-- Time format settings -->
     <string name="settings_time_format">时间显示样式</string>
     <string name="settings_time_format_summary">选择通知列表中的时间显示方式</string>

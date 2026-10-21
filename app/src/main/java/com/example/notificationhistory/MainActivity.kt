@@ -30,7 +30,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: NotificationAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        // 动态取色需在视图创建前应用
+        DynamicColor.apply(this)
+                super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
