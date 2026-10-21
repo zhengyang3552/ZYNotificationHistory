@@ -1,193 +1,186 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  主界面布局
+  层级：固定 TopAppBar -> 权限提示条（按需）-> 可滚动列表 -> 底部导航
+  所有颜色取自主题语义角色，所有间距取自 dimens 令牌。
+-->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:background="?attr/colorSurface">
+    android:fitsSystemWindows="true">
 
-    <!-- Main Content -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Toolbar -->
-        <com.google.android.material.appbar.AppBarLayout
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            style="@style/Widget.ZYNH.Toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:paddingStart="@dimen/space_sm"
+            android:paddingEnd="@dimen/space_sm"
+            app:menu="@menu/menu_main"
+            app:title="@string/main_title" />
+
+        <!-- 权限提示条：未授权时常驻显示，授权后收起 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_permission"
+            style="@style/Widget.ZYNH.Card.Alert"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fitsSystemWindows="true"
-            android:background="@android:color/transparent"
-            android:elevation="0dp">
-
-            <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:paddingTop="8dp"
-                app:title="通知历史"
-                app:titleTextAppearance="?attr/textAppearanceHeadlineSmall"
-                app:menu="@menu/menu_main" />
-
-        </com.google.android.material.appbar.AppBarLayout>
-
-        <!-- Content with NestedScrollView -->
-        <androidx.core.widget.NestedScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingTop="8dp"
-            android:paddingBottom="88dp">
+            android:layout_marginStart="@dimen/screen_margin"
+            android:layout_marginEnd="@dimen/screen_margin"
+            android:layout_marginBottom="@dimen/space_sm"
+            android:visibility="gone"
+            app:cardCornerRadius="@dimen/radius_md">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/space_lg"
+                android:paddingTop="@dimen/space_md"
+                android:paddingEnd="@dimen/space_sm"
+                android:paddingBottom="@dimen/space_md">
 
-                <!-- Permission Status Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_status"
-                    android:layout_width="match_parent"
+                <ImageView
+                    android:id="@+id/iv_permission_icon"
+                    android:layout_width="@dimen/icon_size_md"
+                    android:layout_height="@dimen/icon_size_md"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_error_24"
+                    app:tint="?attr/colorOnErrorContainer" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="16dp"
-                    android:layout_marginTop="8dp"
-                    style="?attr/materialCardViewFilledStyle"
-                    app:cardBackgroundColor="?attr/colorSecondaryContainer"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp"
-                    app:contentPadding="16dp">
+                    android:layout_marginStart="@dimen/space_md"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/tv_permission_title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <ImageView
-                            android:id="@+id/iv_status_icon"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@android:drawable/ic_dialog_info"
-                            android:contentDescription="@null"
-                            android:padding="4dp"
-                            app:tint="?attr/colorOnSecondaryContainer" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="12dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="通知管理"
-                                android:textAppearance="?attr/textAppearanceTitleMedium"
-                                android:textColor="?attr/colorOnSecondaryContainer"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/tv_status"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="检测中..."
-                                android:textAppearance="?attr/textAppearanceBodyMedium"
-                                android:textColor="?attr/colorOnSecondaryContainer"
-                                android:alpha="0.8" />
-                        </LinearLayout>
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_permission"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="去开启"
-                            android:textColor="?attr/colorOnSecondaryContainer"
-                            app:strokeColor="?attr/colorOnSecondaryContainer"
-                            app:cornerRadius="12dp" />
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Empty State -->
-                <LinearLayout
-                    android:id="@+id/empty_state"
-                    android:layout_width="match_parent"
-                    android:layout_height="300dp"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <ImageView
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        android:src="@android:drawable/ic_dialog_info"
-                        android:alpha="0.4"
-                        app:tint="?attr/colorOnSurfaceVariant" />
+                        android:text="@string/permission_title_needed"
+                        android:textAppearance="?attr/textAppearanceTitleSmall"
+                        android:textColor="?attr/colorOnErrorContainer" />
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:id="@+id/tv_permission_message"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:text="暂无通知记录"
-                        android:textAppearance="?attr/textAppearanceBodyLarge"
-                        android:textColor="?attr/colorOnSurfaceVariant" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="开启通知权限后将在此显示通知历史"
+                        android:layout_marginTop="@dimen/space_xxs"
+                        android:text="@string/permission_message_needed"
                         android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:alpha="0.7" />
-
+                        android:textColor="?attr/colorOnErrorContainer" />
                 </LinearLayout>
 
-                <!-- Notification RecyclerView -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler_view"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_permission"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_sm"
+                    android:minWidth="0dp"
+                    android:text="@string/permission_action_enable"
+                    android:textColor="?attr/colorOnErrorContainer"
+                    app:icon="@drawable/ic_chevron_right_24"
+                    app:iconSize="@dimen/icon_size_sm"
+                    app:iconTint="?attr/colorOnErrorContainer" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingStart="@dimen/list_horizontal_inset"
+                android:paddingTop="@dimen/space_xs"
+                android:paddingEnd="@dimen/list_horizontal_inset"
+                android:paddingBottom="@dimen/list_bottom_inset"
+                android:scrollbars="vertical" />
+
+            <!-- 空状态：图标 + 说明 + 主行动 -->
+            <LinearLayout
+                android:id="@+id/empty_state"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/space_2xl"
+                android:paddingEnd="@dimen/space_2xl"
+                android:paddingBottom="@dimen/space_3xl"
+                android:visibility="gone">
+
+                <FrameLayout
+                    android:layout_width="@dimen/empty_state_icon_container"
+                    android:layout_height="@dimen/empty_state_icon_container"
+                    android:background="@drawable/bg_empty_state">
+
+                    <ImageView
+                        android:layout_width="@dimen/empty_state_icon_size"
+                        android:layout_height="@dimen/empty_state_icon_size"
+                        android:layout_gravity="center"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_inbox_24"
+                        app:tint="?attr/colorOnSecondaryContainer" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tv_empty_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_lg"
+                    android:text="@string/empty_title"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <TextView
+                    android:id="@+id/tv_empty_message"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:clipToPadding="false"
-                    android:paddingHorizontal="4dp" />
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:gravity="center"
+                    android:text="@string/empty_message"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_empty_action"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_lg"
+                    android:text="@string/empty_action"
+                    android:visibility="gone" />
             </LinearLayout>
-
-        </androidx.core.widget.NestedScrollView>
-
+        </FrameLayout>
     </LinearLayout>
 
-    <!-- FAB - Clear All -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab_clear_all"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="88dp"
-        android:contentDescription="清空通知历史"
-        android:src="@android:drawable/ic_menu_delete"
-        app:tint="?attr/colorOnPrimary"
-        app:backgroundTint="?attr/colorPrimary"
-        app:fabSize="normal"
-        app:rippleColor="?attr/colorOnErrorContainer"
-        app:shapeAppearance="?attr/shapeAppearanceCornerExtraLarge" />
-
-    <!-- Bottom Navigation -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="?attr/colorSurfaceVariant"
-        app:menu="@menu/menu_bottom_nav"
-        app:labelVisibilityMode="labeled"
-        android:elevation="8dp" />
+        android:layout_marginEnd="@dimen/screen_margin"
+        android:layout_marginBottom="@dimen/screen_margin"
+        android:contentDescription="@string/action_clear"
+        android:text="@string/action_clear"
+        android:visibility="gone"
+        app:icon="@drawable/ic_delete_sweep_24" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

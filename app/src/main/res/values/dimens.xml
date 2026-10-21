@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  设计令牌 · 尺寸
+  间距采用 4dp 栅格（M3 推荐 4/8 的倍数），命名映射到层级语义而非具体数值，
+  布局中只引用令牌，避免出现 12dp/13dp/14dp 混用导致的对齐漂移。
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="UnusedResources">
+
+    <!-- 间距阶梯 -->
+    <dimen name="space_xxs">2dp</dimen>
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_sm">8dp</dimen>
+    <dimen name="space_md">12dp</dimen>
+    <dimen name="space_lg">16dp</dimen>
+    <dimen name="space_xl">24dp</dimen>
+    <dimen name="space_2xl">32dp</dimen>
+    <dimen name="space_3xl">48dp</dimen>
+
+    <!-- 圆角阶梯（对应 M3 shape scale: extra-small 4 / small 8 / medium 12 / large 16 / extra-large 28） -->
+    <dimen name="radius_xs">4dp</dimen>
+    <dimen name="radius_sm">8dp</dimen>
+    <dimen name="radius_md">12dp</dimen>
+    <dimen name="radius_lg">16dp</dimen>
+    <dimen name="radius_xl">28dp</dimen>
+
+    <!-- 页面与列表 -->
+    <dimen name="screen_margin">16dp</dimen>
+    <dimen name="list_horizontal_inset">12dp</dimen>
+    <dimen name="list_bottom_inset">88dp</dimen>
+    <dimen name="section_spacing">24dp</dimen>
+
+    <!-- 组件尺寸 -->
+    <dimen name="icon_size_sm">18dp</dimen>
+    <dimen name="icon_size_md">24dp</dimen>
+    <dimen name="app_icon_size">44dp</dimen>
+    <dimen name="app_icon_padding">6dp</dimen>
+    <dimen name="empty_state_icon_size">32dp</dimen>
+    <dimen name="empty_state_icon_container">88dp</dimen>
+    <dimen name="tag_padding_horizontal">8dp</dimen>
+    <dimen name="tag_padding_vertical">2dp</dimen>
+    <dimen name="divider_thickness">1dp</dimen>
+
+    <!-- 触控区最小尺寸（无障碍） -->
+    <dimen name="min_touch_target">48dp</dimen>
+
+</resources>

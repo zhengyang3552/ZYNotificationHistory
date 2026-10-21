@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+      组件级设计令牌
+      目的：把“卡片/标签/分组标题/设置行”的视觉规则收敛到一处，
+      布局文件里只写业务结构，不再重复 padding、圆角、文字色。
+    -->
+
+    <!-- 卡片：M3 的层级靠 surface container 色阶表达，因此取消阴影 -->
+    <style name="Widget.ZYNH.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerLow</item>
+        <item name="cardCornerRadius">@dimen/radius_lg</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="rippleColor">@android:color/transparent</item>
+    </style>
+
+    <!-- 列表项卡片：可点击，涟漪交给 foreground 的 selectableItemBackground 统一处理 -->
+    <style name="Widget.ZYNH.Card.ListItem" parent="Widget.ZYNH.Card">
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerLow</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+    <!-- 强调卡片：用于需要用户立即处理的提示（如未授权） -->
+    <style name="Widget.ZYNH.Card.Alert" parent="Widget.ZYNH.Card">
+        <item name="cardBackgroundColor">?attr/colorErrorContainer</item>
+    </style>
+
+    <!-- 状态标签：语义色由代码按状态注入，这里只固定排版与形状 -->
+    <style name="Widget.ZYNH.Tag" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingStart">@dimen/tag_padding_horizontal</item>
+        <item name="android:paddingEnd">@dimen/tag_padding_horizontal</item>
+        <item name="android:paddingTop">@dimen/tag_padding_vertical</item>
+        <item name="android:paddingBottom">@dimen/tag_padding_vertical</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelSmall</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <!-- 分区标题 -->
+    <style name="TextAppearance.ZYNH.SectionHeader" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textColor">?attr/colorPrimary</item>
+        <item name="android:letterSpacing">0.04</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- 工具条：标题用 titleLarge，副标题用 labelMedium，形成二级层次 -->
+    <style name="Widget.ZYNH.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:elevation">0dp</item>
+        <item name="titleTextAppearance">?attr/textAppearanceTitleLarge</item>
+        <item name="titleTextColor">?attr/colorOnSurface</item>
+        <item name="subtitleTextAppearance">?attr/textAppearanceLabelMedium</item>
+        <item name="subtitleTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="navigationIconTint">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+
+    <!-- 设置项行：最小 48dp 触控高度，右侧值为次级文字色 -->
+    <style name="Widget.ZYNH.SettingsRow" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingTop">@dimen/space_md</item>
+        <item name="android:paddingBottom">@dimen/space_md</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+
+    <!-- 分段按钮（用于主题/时间格式等互斥选项） -->
+    <style name="Widget.ZYNH.SegmentedButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">40dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
+</resources>

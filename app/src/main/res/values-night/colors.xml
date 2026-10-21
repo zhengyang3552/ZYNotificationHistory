@@ -1,50 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Material 3 颜色令牌 · 深色方案
-    由统一设计规范生成：material-color-utilities（HCT）+ 统一品牌种子色 #0B57D0，
-    与 ZYEmail / RemoteFileManager 的配色同源，请勿手工逐条修改。
+  Material 3 颜色令牌 · 深色方案
+  由统一设计规范生成：material-color-utilities（HCT）+ 统一品牌种子色 #0B57D0，
+  与 ZYEmail / RemoteFileManager 的配色同源。
+  本应用在此之上补全了 surface container 阶梯与 fixed 角色共 47 个语义角色，
+  供主题层（themes.xml）与界面容器色使用；请勿手工逐条修改。
 -->
 <resources>
-    <!-- Material 3 Dark Theme - Unified Blue Palette -->
+    <!-- Dark scheme · 种子色 #0B57D0 -->
+
+    <!-- primary -->
     <color name="md_theme_primary">#FFB2C5FF</color>
-    <color name="md_theme_onPrimary">#FF002B72</color>
-    <color name="md_theme_primaryContainer">#FF0040A1</color>
-    <color name="md_theme_onPrimaryContainer">#FFDAE2FF</color>
 
+    <!-- on -->
+    <color name="md_theme_on_primary">#FF002B72</color>
+
+    <!-- primary -->
+    <color name="md_theme_primary_container">#FF0040A1</color>
+
+    <!-- on -->
+    <color name="md_theme_on_primary_container">#FFDAE2FF</color>
+
+    <!-- inverse -->
+    <color name="md_theme_inverse_primary">#FF495D92</color>
+
+    <!-- secondary -->
     <color name="md_theme_secondary">#FFC0C6DD</color>
-    <color name="md_theme_onSecondary">#FF2A3042</color>
-    <color name="md_theme_secondaryContainer">#FF404659</color>
-    <color name="md_theme_onSecondaryContainer">#FFDCE2F9</color>
 
+    <!-- on -->
+    <color name="md_theme_on_secondary">#FF2A3042</color>
+
+    <!-- secondary -->
+    <color name="md_theme_secondary_container">#FF404659</color>
+
+    <!-- on -->
+    <color name="md_theme_on_secondary_container">#FFDCE2F9</color>
+
+    <!-- tertiary -->
     <color name="md_theme_tertiary">#FFE1BBDD</color>
-    <color name="md_theme_onTertiary">#FF412741</color>
-    <color name="md_theme_tertiaryContainer">#FF5A3D59</color>
-    <color name="md_theme_onTertiaryContainer">#FFFED7F9</color>
 
+    <!-- on -->
+    <color name="md_theme_on_tertiary">#FF412741</color>
+
+    <!-- tertiary -->
+    <color name="md_theme_tertiary_container">#FF5A3D59</color>
+
+    <!-- on -->
+    <color name="md_theme_on_tertiary_container">#FFFED7F9</color>
+
+    <!-- error -->
     <color name="md_theme_error">#FFFFB4AA</color>
-    <color name="md_theme_onError">#FF690003</color>
-    <color name="md_theme_errorContainer">#FF910809</color>
-    <color name="md_theme_onErrorContainer">#FFFFDAD5</color>
 
+    <!-- on -->
+    <color name="md_theme_on_error">#FF690003</color>
+
+    <!-- error -->
+    <color name="md_theme_error_container">#FF910809</color>
+
+    <!-- on -->
+    <color name="md_theme_on_error_container">#FFFFDAD5</color>
+
+    <!-- background -->
     <color name="md_theme_background">#FF131316</color>
-    <color name="md_theme_onBackground">#FFE4E2E6</color>
+
+    <!-- on -->
+    <color name="md_theme_on_background">#FFE4E2E6</color>
+
+    <!-- surface -->
     <color name="md_theme_surface">#FF131316</color>
-    <color name="md_theme_onSurface">#FFE4E2E6</color>
-    <color name="md_theme_surfaceVariant">#FF45464F</color>
-    <color name="md_theme_onSurfaceVariant">#FFC5C6D0</color>
 
+    <!-- on -->
+    <color name="md_theme_on_surface">#FFE4E2E6</color>
+
+    <!-- surface -->
+    <color name="md_theme_surface_variant">#FF45464F</color>
+
+    <!-- on -->
+    <color name="md_theme_on_surface_variant">#FFC5C6D0</color>
+
+    <!-- surface -->
+    <color name="md_theme_surface_dim">#FF121318</color>
+    <color name="md_theme_surface_bright">#FF38393F</color>
+    <color name="md_theme_surface_container_lowest">#FF0D0E13</color>
+    <color name="md_theme_surface_container_low">#FF1A1B21</color>
+    <color name="md_theme_surface_container">#FF1E1F25</color>
+    <color name="md_theme_surface_container_high">#FF282A2F</color>
+    <color name="md_theme_surface_container_highest">#FF33343A</color>
+
+    <!-- outline -->
     <color name="md_theme_outline">#FF8F909A</color>
-    <color name="md_theme_outlineVariant">#FF45464F</color>
+    <color name="md_theme_outline_variant">#FF45464F</color>
 
-    <!-- Inverse colors for M3 chips and surface variants -->
-    <color name="md_theme_inverseSurface">#FFE4E2E6</color>
-    <color name="md_theme_inverseOnSurface">#FF303034</color>
+    <!-- inverse -->
+    <color name="md_theme_inverse_surface">#FFE4E2E6</color>
+    <color name="md_theme_inverse_on_surface">#FF303034</color>
 
-    <!-- Status colors that adapt to theme -->
-    <color name="status_enabled">#FF85D98E</color>
-    <color name="status_disabled">#FFFFB4AA</color>
+    <!-- scrim -->
+    <color name="md_theme_scrim">#FF000000</color>
 
-    <!-- Legacy compatibility -->
-    <color name="black">#000000</color>
-    <color name="white">#FFFFFF</color>
+    <!-- primary -->
+    <color name="md_theme_primary_fixed">#FFDAE2FF</color>
+    <color name="md_theme_primary_fixed_dim">#FFB2C5FF</color>
+
+    <!-- on -->
+    <color name="md_theme_on_primary_fixed">#FF001847</color>
+    <color name="md_theme_on_primary_fixed_variant">#FF304578</color>
+
+    <!-- secondary -->
+    <color name="md_theme_secondary_fixed">#FFDCE2F9</color>
+    <color name="md_theme_secondary_fixed_dim">#FFC0C6DD</color>
+
+    <!-- on -->
+    <color name="md_theme_on_secondary_fixed">#FF151B2C</color>
+    <color name="md_theme_on_secondary_fixed_variant">#FF404659</color>
+
+    <!-- tertiary -->
+    <color name="md_theme_tertiary_fixed">#FFFED7F9</color>
+    <color name="md_theme_tertiary_fixed_dim">#FFE1BBDD</color>
+
+    <!-- on -->
+    <color name="md_theme_on_tertiary_fixed">#FF2B122B</color>
+    <color name="md_theme_on_tertiary_fixed_variant">#FF5A3D59</color>
 </resources>
