@@ -23,6 +23,9 @@ interface NotificationDao {
     @Query("SELECT COUNT(*) FROM notifications")
     fun observeCount(): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM notifications")
+    suspend fun count(): Int
+
     @Query("SELECT * FROM notifications WHERE id = :id LIMIT 1")
     suspend fun findById(id: Int): NotificationEntity?
 

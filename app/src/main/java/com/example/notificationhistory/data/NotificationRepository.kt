@@ -55,7 +55,8 @@ class NotificationRepository(context: Context) {
                 else -> dao.insertIgnore(entity)
             }
 
-            if (retentionLimit > 0) {
+            // 先判断是否真的超额，避免每条通知都执行一次 DELETE ... NOT IN (子查询)
+            if (retentionLimit > 0 && dao.count() > retentionLimit) {
                 dao.trimTo(retentionLimit)
             }
         }
