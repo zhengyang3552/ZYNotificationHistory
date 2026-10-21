@@ -2,9 +2,10 @@ name: CI
 
 # 统一 Android CI 规范（与 ZYEmail / RemoteFileManager 同构）：
 #   push main / v* 标签 / PR / 手动触发；质量门(build) -> lint -> release 三段。
-# Release 签名优先从 GitHub Secrets 注入（KEYSTORE_BASE64 / KEYSTORE_PASSWORD /
-# KEY_ALIAS / KEY_PASSWORD），不再依赖本地 keystore 文件；未配置 Secret 时
-# 自动生成临时 keystore 完成构建（产物可验证构建但不可上架）。
+# Release 签名固定：从 GitHub Secrets 注入统一发布 keystore
+# （KEYSTORE_BASE64 / KEYSTORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD），
+# 所有版本的签名证书一致，用户可稳定覆盖安装与升级；未配置 Secret 时
+# release job 直接失败（绝不出随机签名的包），配置方法见 SIGNING.md。
 
 on:
   push:
@@ -199,32 +200,45 @@ jobs:
               "build-tools;${ANDROID_BUILD_TOOLS}" > /dev/null
           fi
 
-      # build.gradle 的 signingConfigs 无条件读取 KEYSTORE_PATH 等环境变量，
-      # 且 secrets 上下文不能用于 if 条件，所以这里不用 if 分支，而是在脚本内判断：
-      # 已配置 KEYSTORE_BASE64 Secret -> 解码正式 keystore；
-      # 未配置 -> keytool 现场生成临时 keystore，保证 assembleRelease 一定能过
-      # （临时签名的包仅验证可构建，不可上架，日志会有 warning 提示）。
-      - name: 准备签名 keystore
+      # 从仓库 Secret 还原固定发布 keystore（缺失则直接失败，绝不出随机签名的包，
+      # 否则用户已安装的版本将无法覆盖升级；配置方法见 SIGNING.md）
+      - name: 还原固定签名 keystore
         env:
           KEYSTORE_B64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [ -n "$KEYSTORE_B64" ]; then
-            echo "$KEYSTORE_B64" | base64 -d > app/release.keystore
-            echo "使用 Secret 中的正式 keystore"
-          else
-            keytool -genkeypair -v -keystore app/release.keystore \
-              -storepass zy-ci-temp-2026 -keypass zy-ci-temp-2026 \
-              -alias zy-ci-temp -keyalg RSA -keysize 2048 -validity 30 \
-              -dname "CN=ZY CI Temporary" > /dev/null 2>&1
-            echo "KEYSTORE_PASSWORD=zy-ci-temp-2026" >> "$GITHUB_ENV"
-            echo "KEY_ALIAS=zy-ci-temp" >> "$GITHUB_ENV"
-            echo "KEY_PASSWORD=zy-ci-temp-2026" >> "$GITHUB_ENV"
-            echo "::warning::未配置 KEYSTORE_BASE64 等 Secret，本次 Release 使用临时 keystore 签名，不可用于上架"
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error::未配置 KEYSTORE_BASE64 等 Secret，无法产出签名固定的 Release 包（配置方法见 SIGNING.md）"
+            exit 1
           fi
-          echo "KEYSTORE_PATH=app/release.keystore" >> "$GITHUB_ENV"
+          echo "$KEYSTORE_B64" | base64 -d > app/release.keystore
+          {
+            echo "KEYSTORE_PATH=app/release.keystore"
+            echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "KEY_ALIAS=$KEY_ALIAS"
+            echo "KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
 
       - name: 构建 Release APK
         run: ./gradlew --no-daemon --stacktrace assembleRelease
+
+      # 输出签名证书 SHA-256 到 Step Summary：这是固定校验值，
+      # 每次发版应完全一致，用户可据此核对更新包来源
+      - name: 校验签名指纹
+        run: |
+          set -euo pipefail
+          APK=$(find app/build/outputs/apk/release -name '*.apk' | head -1)
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort | tail -1)
+          "$APKSIGNER" verify --print-certs "$APK" > certs.txt
+          SHA256=$(grep -oE 'SHA-256 digest: .*' certs.txt | head -1 | cut -d' ' -f3-)
+          {
+            echo "### 签名指纹（固定校验值）"
+            echo '```'
+            echo "SHA-256: $SHA256"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: 重命名 APK（带版本号）
         run: |
