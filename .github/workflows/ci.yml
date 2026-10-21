@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -53,7 +53,7 @@ jobs:
 
       # 缓存 Gradle Wrapper 与依赖，二次构建通常 3 分钟内完成
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Restore signing keystore
         id: keystore
@@ -93,7 +93,7 @@ jobs:
 
       - name: Upload APKs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           # PR 事件的 ref_name 是 "16/merge" 这类含 / 的值，artifact 名不允许斜杠，改用编号
           name: apk-${{ github.event.pull_request.number || github.run_number }}-${{ github.sha }}
@@ -105,7 +105,7 @@ jobs:
 
       - name: Upload lint report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: lint-report-${{ github.sha }}
           path: app/build/reports/lint-results-debug.html
