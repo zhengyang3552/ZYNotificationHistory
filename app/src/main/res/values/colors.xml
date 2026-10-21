@@ -9,6 +9,9 @@
 <resources>
     <!-- Light scheme · 种子色 #0B57D0 -->
 
+    <!-- 应用图标背景（自适应图标背景层），与品牌主色一致 -->
+    <color name="ic_launcher_background">#FF0856CF</color>
+
     <!-- primary -->
     <color name="md_theme_primary">#FF0856CF</color>
 
