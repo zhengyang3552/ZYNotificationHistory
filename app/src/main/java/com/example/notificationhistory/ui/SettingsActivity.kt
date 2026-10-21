@@ -37,12 +37,15 @@ class SettingsActivity : AppCompatActivity() {
     private var suppressTimeCallback = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 动态取色需在视图创建前应用（Android 12+ 跟随壁纸，关闭时回退统一品牌色）
+        DynamicColor.apply(this)
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         setupToolbar()
         setupThemeSection()
+        setupDynamicColorSwitch()
         setupTimeFormatSection()
         setupShowPackageSwitch()
         setupRetentionRow()
@@ -86,6 +89,15 @@ class SettingsActivity : AppCompatActivity() {
             }
             // setDefaultNightMode 会由 AppCompat 统一重建界面，无需手动 recreate
             AppPreferences.setThemeMode(this, mode)
+        }
+    }
+
+    private fun setupDynamicColorSwitch() {
+        binding.switchDynamicColor.isChecked = DynamicColor.enabled(this)
+        binding.switchDynamicColor.setOnCheckedChangeListener { _, checked ->
+            DynamicColor.setEnabled(this, checked)
+            // DynamicColor.apply 在 onCreate 中执行，重建后立即生效
+            recreate()
         }
     }
 

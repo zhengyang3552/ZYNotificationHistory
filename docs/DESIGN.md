@@ -13,61 +13,77 @@
 
 ## 2. 色彩方案
 
-### 2.1 种子色的选择依据
+### 2.1 种子色与统一设计规范
 
-应用定位是「系统通知的本地档案馆」：长时间浏览、以信息阅读为主。主色需要冷静可信，同时与 Android 上大量使用 M3 默认紫（`#6750A4`）的应用区分开。
+本应用的配色属于一套**跨应用统一设计规范**：与 ZYEmail、RemoteFileManager 使用同一品牌种子色 **`#0B57D0`（HCT 色相 270.3°，彩度 65，tone 40.3）**，色板由 Material Color Utilities 的 `SchemeTonalSpot` 统一推导，保证几个应用的观感一致、可被用户当作同一套产品识别。
 
-最终选取 **深青（Lagoon Teal）`#00696E`** 作为种子色（HCT：色相 202°，彩度 34.5）：
+选择蓝色系作为品牌色的依据：
 
-1. **语义贴合**：青蓝系在屏幕上天然关联「系统 / 监控 / 日志」，与「历史记录」的产品语境一致。
-2. **状态可分辨**：主色（202°）、第三色（约 250°）、错误色（25°）在色相环上彼此间隔 ≥ 45°，其中主色与错误色相隔 177°，因此「常驻 / 临时 / 已移除」三种状态标签不会互相混淆，红色也只留给真正的错误。
-3. **明暗都可读**：该色相在深色模式下能推导出 `#80D4D9` 这种高明度、低刺激的主色，暗色环境下不刺眼；浅色模式下 `#00696E` 对白字对比度 6.47:1，可直接承载主按钮。
+1. **语义贴合**：蓝色承载「系统、可信、归档」的心智，与「通知历史」这类工具型应用契合，长时间阅读不疲劳；
+2. **状态可分辨**：主色（270°）、第三色（约 335° 的紫红）、错误色（25° 的红）在色相环上相互远离，「常驻 / 临时 / 已移除」三类状态标签不会混淆，红色只留给真正的异常；
+3. **明暗都可读**：深色模式推导出 `#B2C5FF` 这类高明度主色，暗色环境下不刺眼；浅色模式 `#0856CF` 对白字对比度 6.48:1，可直接承载主按钮与彩色文字。
 
-> 全部 47 个角色由 **Material Color Utilities** 的 `SchemeTonalSpot(seed, isDark, contrastLevel = 0)` 计算得出，
-> 而非手工挑选十六进制值。这样可保证色调板（tone 0–100）间距、彩度与 sRGB 色域裁剪都符合 M3 规范，
-> 后续若要支持动态取色（Material You），只需替换种子色重新生成本文件即可。
+> 全部 47 个语义角色由 **Material Color Utilities**（`SchemeTonalSpot(seed, isDark, contrastLevel = 0)`）计算生成，
+> 其中 26 个核心角色与统一规范基线值完全一致，surface container 阶梯、fixed 角色等补充角色按同一种子色推导，
+> 保证与规范同源且满足本应用对容器色阶的完整需求。后续如需换品牌色，只需替换种子色重新生成两个 colors.xml。
+
+**动态取色（Material You）**：Android 12+ 上可在「设置 → 外观」开启「动态取色」，由 `DynamicColors.applyToActivityIfAvailable`
+以壁纸取色包装当前主题；关闭或低版本时回退到上述统一品牌色方案。开关状态存于 `notification_prefs`，
+切换后 `recreate()` 立即生效。
 
 ### 2.2 语义角色对照
 
-命名规则：`md_theme_<role>`，`values` 为浅色、`values-night` 为深色，角色名与 M3 官方一致。
+命名规则：`md_theme_<role>`（snake_case），`values` 为浅色、`values-night` 为深色，角色名与 M3 官方一致。
 
 | 语义角色 | 浅色 | 深色 |
 | --- | --- | --- |
-| `primary` | `#00696E` | `#80D4D9` |
-| `on_primary` | `#FFFFFF` | `#003739` |
-| `primary_container` | `#9CF0F6` | `#004F53` |
-| `on_primary_container` | `#004F53` | `#9CF0F6` |
-| `inverse_primary` | `#80D4D9` | `#00696E` |
-| `secondary` | `#4A6364` | `#B1CCCD` |
-| `on_secondary` | `#FFFFFF` | `#1B3436` |
-| `secondary_container` | `#CCE8E9` | `#324B4D` |
-| `on_secondary_container` | `#324B4D` | `#CCE8E9` |
-| `tertiary` | `#4E5F7D` | `#B6C7E9` |
-| `on_tertiary` | `#FFFFFF` | `#20314C` |
-| `tertiary_container` | `#D6E3FF` | `#364764` |
-| `on_tertiary_container` | `#364764` | `#D6E3FF` |
-| `error` | `#BA1A1A` | `#FFB4AB` |
-| `on_error` | `#FFFFFF` | `#690005` |
-| `error_container` | `#FFDAD6` | `#93000A` |
-| `on_error_container` | `#93000A` | `#FFDAD6` |
-| `background` | `#F4FAFA` | `#0E1415` |
-| `on_background` | `#161D1D` | `#DDE4E4` |
-| `surface` | `#F4FAFA` | `#0E1415` |
-| `on_surface` | `#161D1D` | `#DDE4E4` |
-| `surface_variant` | `#DAE4E5` | `#3F4949` |
-| `on_surface_variant` | `#3F4949` | `#BEC8C9` |
-| `surface_dim` | `#D5DBDB` | `#0E1415` |
-| `surface_bright` | `#F4FAFA` | `#343A3B` |
-| `surface_container_lowest` | `#FFFFFF` | `#090F10` |
-| `surface_container_low` | `#EFF5F5` | `#161D1D` |
-| `surface_container` | `#E9EFEF` | `#1A2121` |
-| `surface_container_high` | `#E3E9E9` | `#252B2B` |
-| `surface_container_highest` | `#DDE4E4` | `#303636` |
-| `outline` | `#6F7979` | `#899393` |
-| `outline_variant` | `#BEC8C9` | `#3F4949` |
-| `inverse_surface` | `#2B3232` | `#DDE4E4` |
-| `inverse_on_surface` | `#ECF2F2` | `#2B3232` |
+| `primary` | `#0856CF` | `#B2C5FF` |
+| `on_primary` | `#FFFFFF` | `#002B72` |
+| `primary_container` | `#DAE2FF` | `#0040A1` |
+| `on_primary_container` | `#001847` | `#DAE2FF` |
+| `inverse_primary` | `#B2C5FF` | `#495D92` |
+| `secondary` | `#585E71` | `#C0C6DD` |
+| `on_secondary` | `#FFFFFF` | `#2A3042` |
+| `secondary_container` | `#DCE2F9` | `#404659` |
+| `on_secondary_container` | `#151B2C` | `#DCE2F9` |
+| `tertiary` | `#735471` | `#E1BBDD` |
+| `on_tertiary` | `#FFFFFF` | `#412741` |
+| `tertiary_container` | `#FED7F9` | `#5A3D59` |
+| `on_tertiary_container` | `#2B122B` | `#FED7F9` |
+| `error` | `#B4271F` | `#FFB4AA` |
+| `on_error` | `#FFFFFF` | `#690003` |
+| `error_container` | `#FFDAD5` | `#910809` |
+| `on_error_container` | `#410001` | `#FFDAD5` |
+| `background` | `#FBF8FD` | `#131316` |
+| `on_background` | `#1B1B1F` | `#E4E2E6` |
+| `surface` | `#FBF8FD` | `#131316` |
+| `on_surface` | `#1B1B1F` | `#E4E2E6` |
+| `surface_variant` | `#E1E2EC` | `#45464F` |
+| `on_surface_variant` | `#45464F` | `#C5C6D0` |
+| `surface_dim` | `#DAD9E0` | `#121318` |
+| `surface_bright` | `#FAF8FF` | `#38393F` |
+| `surface_container_lowest` | `#FFFFFF` | `#0D0E13` |
+| `surface_container_low` | `#F4F3FA` | `#1A1B21` |
+| `surface_container` | `#EEEDF4` | `#1E1F25` |
+| `surface_container_high` | `#E8E7EF` | `#282A2F` |
+| `surface_container_highest` | `#E2E2E9` | `#33343A` |
+| `outline` | `#757780` | `#8F909A` |
+| `outline_variant` | `#C5C6D0` | `#45464F` |
+| `inverse_surface` | `#303034` | `#E4E2E6` |
+| `inverse_on_surface` | `#F2F0F4` | `#303034` |
 | `scrim` | `#000000` | `#000000` |
+| `primary_fixed` | `#DAE2FF` | `#DAE2FF` |
+| `primary_fixed_dim` | `#B2C5FF` | `#B2C5FF` |
+| `on_primary_fixed` | `#001847` | `#001847` |
+| `on_primary_fixed_variant` | `#304578` | `#304578` |
+| `secondary_fixed` | `#DCE2F9` | `#DCE2F9` |
+| `secondary_fixed_dim` | `#C0C6DD` | `#C0C6DD` |
+| `on_secondary_fixed` | `#151B2C` | `#151B2C` |
+| `on_secondary_fixed_variant` | `#404659` | `#404659` |
+| `tertiary_fixed` | `#FED7F9` | `#FED7F9` |
+| `tertiary_fixed_dim` | `#E1BBDD` | `#E1BBDD` |
+| `on_tertiary_fixed` | `#2B122B` | `#2B122B` |
+| `on_tertiary_fixed_variant` | `#5A3D59` | `#5A3D59` |
 
 此外还提供 `primary/secondary/tertiary_fixed(_dim)` 与对应的 `on_*_fixed(_variant)` 共 12 个固定角色，
 用于「不随明暗翻转的同色块」（例如未来做分享卡片、图表配色）；当前界面未直接使用，但作为完整角色集保留。
@@ -76,7 +92,7 @@
 
 | 状态 | 背景角色 | 前景角色 | 设计依据 |
 | --- | --- | --- | --- |
-| 临时（默认） | `secondary_container` | `on_secondary_container` | 默认态是「绝大多数」，应用低饱和容器色，避免每条通知都在争夺注意力（改造前用 `primary_container`，导致所有条目同等高亮） |
+| 临时（默认） | `secondary_container` | `on_secondary_container` | 默认态是「绝大多数」，应用低饱和容器色，避免每条通知都在争夺注意力 |
 | 常驻 | `tertiary_container` | `on_tertiary_container` | 「持续存在」是一种特殊但非异常的状态，用第三色与默认态区分 |
 | 已移除 | `surface_container_highest` | `on_surface_variant` | 「已从通知栏移除」是信息性状态而非错误，用中性容器色；红色只留给权限缺失等真正的异常 |
 | 权限缺失提示条 | `error_container` | `on_error_container` | 阻塞型状态，需要用户立即处理 |
@@ -85,15 +101,16 @@
 
 | 前景 / 背景 | 浅色 | 深色 |
 | --- | --- | --- |
-| `on_surface` / `surface` | 16.21:1 | 14.42:1 |
-| `on_surface_variant` / `surface` | 8.80:1 | 10.88:1 |
-| `on_primary` / `primary` | 6.47:1 | 7.68:1 |
-| `on_primary_container` / `primary_container` | 7.23:1 | 7.23:1 |
-| `on_secondary_container` / `secondary_container` | 7.24:1 | 7.24:1 |
-| `on_tertiary_container` / `tertiary_container` | 7.27:1 | 7.27:1 |
-| `on_error_container` / `error_container` | 7.24:1 | 7.24:1 |
-| `primary` / `surface`（当文字用） | 6.13:1 | 10.92:1 |
-| `error` / `surface`（当文字用） | 6.12:1 | 10.95:1 |
+| `on_surface` / `surface` | 16.31:1 | 14.41:1 |
+| `on_surface_variant` / `surface` | 8.90:1 | 10.92:1 |
+| `on_primary` / `primary` | 6.48:1 | 7.76:1 |
+| `on_primary_container` / `primary_container` | 13.35:1 | 7.25:1 |
+| `on_secondary_container` / `secondary_container` | 13.30:1 | 7.28:1 |
+| `on_tertiary_container` / `tertiary_container` | 13.32:1 | 7.26:1 |
+| `on_error_container` / `error_container` | 13.26:1 | 7.24:1 |
+| `on_error` / `error` | 6.46:1 | 7.72:1 |
+| `primary` / `surface` | 6.15:1 | 10.88:1 |
+| `error` / `surface` | 6.14:1 | 10.92:1 |
 
 全部组合 ≥ 4.5:1，正文与次要文字均满足 AA；主要阅读文本（16:1 左右）接近 AAA。
 
@@ -104,6 +121,8 @@
   低版本设备沿用系统默认导航栏（黑底白图标），不会出现「透明栏 + 白色图标」不可见的组合。
 - **冷启动即正确**：`App.onCreate()` 读取已保存的模式并调用 `AppCompatDelegate.setDefaultNightMode`，
   修正了改造前「只有设置页应用主题、冷启动会先按系统主题绘制一帧」的闪烁问题。
+- **动态取色按需启用**：默认关闭（保持统一品牌识别），开启后由 Material DynamicColors 接管，
+  关闭立即回退品牌色，两种模式都保证文字对比度达标。
 - **关闭框架二次调制**：`elevationOverlayEnabled=false`（M3 用容器色表达高度，不再叠加 elevation overlay）、
   `forceDarkAllowed=false`（避免系统强制深色改写我们已定义的色值）。
 
@@ -161,6 +180,7 @@
 1. **不要在布局或 Kotlin 中写死颜色**，只引用 `?attr/color*` 或 `@color/md_theme_*`；
    需要按状态取色时用 `MaterialColors.getColor(view, attrRes)`（见 `NotificationAdapter`）。
 2. **不要在布局中写死间距/圆角**，只引用 `@dimen/*` 令牌。
-3. 新增颜色 → 改 `docs/` 中的生成流程（Material Color Utilities）重新生成
-   `values/colors.xml` 与 `values-night/colors.xml`，不要单独补一个色值。
+3. 新增颜色 → 用统一规范的生成流程（Material Color Utilities，种子色 `#0B57D0`）重新生成
+   `values/colors.xml` 与 `values-night/colors.xml`，不要单独补一个色值；
+   26 个核心角色的取值必须与统一设计规范基线保持一致。
 4. 组件级视觉规则（卡片、标签、设置行、分段按钮）放在 `values/styles.xml`，布局只描述结构。

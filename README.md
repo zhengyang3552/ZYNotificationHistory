@@ -21,7 +21,7 @@ ZYNotificationHistory 是一款 Android 应用程序，用于记录和查看系�
 - **搜索**：按应用名、标题、正文、包名实时过滤。
 - **记录管理**：侧滑或长按删除（可撤销）、查看详情、复制正文、一键清空。
 - **保留上限**：可设置 500 / 1000 / 5000 条或不限制，超出后自动清理最早记录。
-- **设置中心**：主题模式（跟随系统 / 浅色 / 深色）、时间格式（相对 / 精确）、是否显示包名、权限与存储管理。
+- **设置中心**：主题模式（跟随系统 / 浅色 / 深色）、动态取色（Android 12+ 壁纸取色）、时间格式（相对 / 精确）、是否显示包名、权限与存储管理。
 - **Material 3 主题**：完整语义色角色、明暗双模式、统一设计令牌。
 
 ## 🛠 技术栈
@@ -37,17 +37,17 @@ ZYNotificationHistory 是一款 Android 应用程序，用于记录和查看系�
 
 ## 🎨 设计系统
 
-配色以 **深青 `#00696E`** 为种子色，由 *Material Color Utilities* 的 `SchemeTonalSpot` 推导出 47 个语义色角色（浅色 / 深色各一套），全部组合对比度 ≥ 4.5:1。
+配色遵循**跨应用统一设计规范**，与 ZYEmail / RemoteFileManager 使用同一品牌种子色 **`#0B57D0`**，由 Material Color Utilities 的 `SchemeTonalSpot` 推导出 47 个语义色角色（浅色 / 深色各一套），全部组合对比度 ≥ 4.5:1。Android 12+ 支持开启「动态取色」跟随壁纸。
 
 | 角色 | 浅色 | 深色 |
 | --- | --- | --- |
-| Primary | `#00696E` | `#80D4D9` |
-| Primary Container | `#9CF0F6` | `#004F53` |
-| Secondary Container | `#CCE8E9` | `#324B4D` |
-| Tertiary Container | `#D6E3FF` | `#364764` |
-| Surface | `#F4FAFA` | `#0E1415` |
-| Surface Container Low | `#EFF5F5` | `#161D1D` |
-| Error Container | `#FFDAD6` | `#93000A` |
+| Primary | `#0856CF` | `#B2C5FF` |
+| Primary Container | `#DAE2FF` | `#0040A1` |
+| Secondary Container | `#DCE2F9` | `#404659` |
+| Tertiary Container | `#FED7F9` | `#5A3D59` |
+| Surface | `#FBF8FD` | `#131318` |
+| Surface Container Low | `#F4F3FA` | `#1B1B21` |
+| Error Container | `#FFDAD5` | `#93000A` |
 
 完整角色表、对比度实测、设计令牌与组件规范见 **[docs/DESIGN.md](docs/DESIGN.md)**。
 
@@ -80,52 +80,45 @@ ZYNotificationHistory 是一款 Android 应用程序，用于记录和查看系�
 
 ### 生成签名包 (Release Build)
 
-项目配置了签名环境，需要配置签名文件才能生成 Release APK。
-请在项目根目录创建 `release.keystore` 文件，或在环境变量中设置：
+Release 一律由 CI 在推送 `v*` 标签时构建并发布到 GitHub Releases（签名固定的 keystore 通过仓库
+Secrets 注入，保证所有版本证书一致、可覆盖升级）。本地如需自签，可设置环境变量后执行：
 
 ```bash
-export KEYSTORE_PATH="path/to/keystore"
+export KEYSTORE_PATH="path/to/keystore"   # 相对路径以仓库根目录为基准
 export KEYSTORE_PASSWORD="your_password"
 export KEY_ALIAS="your_alias"
 export KEY_PASSWORD="your_key_password"
-```
-
-然后执行：
-```bash
 ./gradlew assembleRelease
 ```
 
+签名配置方法见 [SIGNING.md](SIGNING.md)。
+
 ## ⚙️ CI/CD
 
-`.github/workflows/ci.yml` 负责在云端完成编译，本地无需安装 Android SDK 也能拿到 APK。
+`.github/workflows/ci.yml` 采用三段式流水线（与 ZYEmail / RemoteFileManager 同构），本地无需安装 Android SDK 也能拿到 APK。
 
-**触发条件**：推送到 `main`、提交 PR 到 `main`、推送 `v*` 标签、手动 `workflow_dispatch`。
-同一分支的新提交会取消上一次未完成的运行（`concurrency`）。
+**触发条件**：推送到 `main`、提交 PR 到 `main`、推送 `v*` 标签（触发发布）、手动 `workflow_dispatch`；
+同一分支新提交会自动取消上一次未完成的运行。
 
-**流水线步骤**：
+| 阶段 | 内容 | 产物 |
+| --- | --- | --- |
+| `build` | 单元测试 + 构建 Debug APK | `ZYNotificationHistory-debug` |
+| `lint` | `lintDebug`（有 error 即失败，作为质量门禁） | `ZYNotificationHistory-lint-report` |
+| `release` | 仅 `v*` 标签：固定签名构建 Release APK → 创建 GitHub Release 并附加 APK | Release 页面下载 |
 
-1. `actions/setup-java@v4` 安装 JDK 17（Temurin）
-2. `android-actions/setup-android@v3` 安装 SDK 并安装 `platforms;android-34`、`build-tools;34.0.0`
-3. `gradle/actions/setup-gradle@v4` 缓存 Gradle Wrapper 与依赖
-4. `assembleDebug` → `lintDebug`（Lint 有 error 时构建失败，作为质量门禁）→ `assembleRelease`
-5. 上传 `apk-*` 与 `lint-report-*` 两个 Artifact，并写入运行摘要
+日常构建的 APK 在对应运行详情页的 **Artifacts** 区域下载；正式发版打 `v1.3` 这类标签即可。
 
-**下载编译产物**：进入 Actions 运行详情页 → 页面底部 **Artifacts** → 下载 `apk-<分支/标签>-<sha>`，解压后即得到 `app-debug.apk` / `app-release.apk`。
-
-**签名配置（可选）**：仓库内置了演示用 `app/release.keystore`，CI 会直接用它签出 Release 包。
-正式发布建议改为仓库 Secrets，工作流会自动优先使用：
-
-| Secret | 说明 |
-| --- | --- |
-| `KEYSTORE_BASE64` | keystore 文件的 base64 文本（`base64 -w0 release.keystore`） |
-| `KEYSTORE_PASSWORD` | keystore 密码 |
-| `KEY_ALIAS` | key 别名 |
-| `KEY_PASSWORD` | key 密码 |
-
-未配置 `KEYSTORE_BASE64` 时仍会使用仓库内的 keystore；若两者都不存在，则只构建 Debug 包。
-
+**固定发布签名**：`release` 阶段从仓库 Secrets 读取 `KEYSTORE_BASE64` / `KEYSTORE_PASSWORD` /
+`KEY_ALIAS` / `KEY_PASSWORD`（配置方法见 [SIGNING.md](SIGNING.md)）。未配置时该阶段直接失败，
+不会产出签名不稳定的包；构建摘要会输出签名证书 SHA-256 供每次发版核对。
 
 ## 📝 变更记录
+
+### v1.3
+
+- 对齐跨应用统一设计规范：品牌种子色切换为 `#0B57D0`（与 ZYEmail / RemoteFileManager 同源），26 个核心角色与规范基线一致，并补全 surface container 阶梯与 fixed 角色（共 47 个语义角色）。
+- 新增「动态取色」开关（Android 12+ 壁纸取色，关闭回退统一品牌色），设置 → 外观。
+- CI 采用三段式规范（build / lint / release），Release 固定签名（Secrets 注入，签名指纹写入构建摘要），并修复 keystore 相对路径解析问题。
 
 ### v1.2
 

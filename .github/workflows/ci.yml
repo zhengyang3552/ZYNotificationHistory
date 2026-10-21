@@ -1,127 +1,255 @@
 name: CI
 
+# 统一 Android CI 规范（与 ZYEmail / RemoteFileManager 同构）：
+#   push main / v* 标签 / PR / 手动触发；质量门(build) -> lint -> release 三段。
+# Release 签名固定：从 GitHub Secrets 注入统一发布 keystore
+# （KEYSTORE_BASE64 / KEYSTORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD），
+# 所有版本的签名证书一致，用户可稳定覆盖安装与升级；未配置 Secret 时
+# release job 直接失败（绝不出随机签名的包），配置方法见 SIGNING.md。
+
 on:
   push:
     branches: [main]
     tags: ['v*']
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
   workflow_dispatch:
 
-# 同一分支的新提交会取消上一次未完成的构建，避免排队
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
+env:
+  ANDROID_COMPILE_SDK: '34'
+  ANDROID_BUILD_TOOLS: '34.0.0'
+
 jobs:
+  # ------------------------------------------------------- 单测 + Debug 构建
   build:
-    name: Build & Lint
+    name: 测试 / 构建 Debug APK
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
+    timeout-minutes: 40
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - name: 检出代码
+        uses: actions/checkout@v7
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
+      - name: 配置 JDK 17
+        uses: actions/setup-java@v6
         with:
           java-version: '17'
           distribution: temurin
 
-      # ubuntu-latest 已预装 Android SDK 与 cmdline-tools，只需补齐编译所需的 platform 与 build-tools。
-      # 不再使用 android-actions/setup-android，它内部会执行 `sdkmanager tools`，
-      # 而 Google 已下线该包，会导致整条流水线在 SDK 安装阶段失败。
-      - name: Set up Android SDK
-        run: |
-          set -euo pipefail
-          SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
-          SDKM="$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager 2>/dev/null | head -n 1)"
-          if [ -z "$SDKM" ]; then
-            echo "未找到 sdkmanager，SDK 目录内容："
-            ls -R "$SDK_ROOT" | head -50
-            exit 1
-          fi
-          echo "sdkmanager: $SDKM"
-          yes | "$SDKM" --sdk_root="$SDK_ROOT" --licenses > /dev/null || true
-          "$SDKM" --sdk_root="$SDK_ROOT" --install "platforms;android-34" "build-tools;34.0.0"
-          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+      - name: 配置 Gradle（含依赖缓存）
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
-      # 缓存 Gradle Wrapper 与依赖，二次构建通常 3 分钟内完成
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v5
-
-      - name: Restore signing keystore
-        id: keystore
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        run: |
-          set -euo pipefail
-          if [ -n "${KEYSTORE_BASE64}" ]; then
-            echo "${KEYSTORE_BASE64}" | base64 -d > app/release.keystore
-            echo "由 secret KEYSTORE_BASE64 还原签名文件"
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          elif [ -f app/release.keystore ]; then
-            echo "使用仓库内置 app/release.keystore（建议后续改为 secret）"
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "没有可用签名文件，本次跳过 Release 构建"
-            echo "available=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Grant execute permission for gradlew
+      - name: 授予 gradlew 执行权限
         run: chmod +x ./gradlew
 
-      - name: Build debug APK
-        run: ./gradlew --stacktrace assembleDebug
+      - name: 补齐 Android SDK 组件
+        run: |
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          if [ -x "$SDKMANAGER" ]; then
+            yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+            yes | "$SDKMANAGER" "platform-tools" \
+              "platforms;android-${ANDROID_COMPILE_SDK}" \
+              "build-tools;${ANDROID_BUILD_TOOLS}" > /dev/null
+          else
+            echo "sdkmanager not found, fallback to preinstalled SDK"
+          fi
 
-      - name: Run lint
-        run: ./gradlew --stacktrace lintDebug
+      - name: 单元测试
+        run: ./gradlew --no-daemon --stacktrace testDebugUnitTest
 
-      - name: Build signed release APK
-        if: steps.keystore.outputs.available == 'true'
-        env:
-          KEYSTORE_PATH: ${{ github.workspace }}/app/release.keystore
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || 'android123' }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS || 'zy-notification-history' }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'android123' }}
-        run: ./gradlew --stacktrace assembleRelease
+      - name: 构建 Debug APK
+        run: ./gradlew --no-daemon --stacktrace assembleDebug
 
-      - name: Upload APKs
-        if: always()
-        uses: actions/upload-artifact@v6
+      - name: 写入构建摘要
+        run: |
+          APK=$(find app/build/outputs/apk/debug -name '*.apk' | head -1)
+          {
+            echo "### Debug APK"
+            echo "- 产物：\`$APK\`"
+            echo "- 大小：$(du -h "$APK" | cut -f1)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          ls -lh app/build/outputs/apk/debug/
+
+      - name: 上传 Debug APK
+        uses: actions/upload-artifact@v7
         with:
-          # PR 事件的 ref_name 是 "16/merge" 这类含 / 的值，artifact 名不允许斜杠，改用编号
-          name: apk-${{ github.event.pull_request.number || github.run_number }}-${{ github.sha }}
+          name: ZYNotificationHistory-debug
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: 上传测试报告
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ZYNotificationHistory-unit-test-report
           path: |
-            app/build/outputs/apk/debug/*.apk
-            app/build/outputs/apk/release/*.apk
+            app/build/reports/tests/testDebugUnitTest
+            app/build/test-results/testDebugUnitTest
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # ----------------------------------------------------------------- Lint
+  lint:
+    name: Lint 检查
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v7
+
+      - name: 配置 JDK 17
+        uses: actions/setup-java@v6
+        with:
+          java-version: '17'
+          distribution: temurin
+
+      - name: 配置 Gradle（含依赖缓存）
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: 授予 gradlew 执行权限
+        run: chmod +x ./gradlew
+
+      - name: 补齐 Android SDK 组件
+        run: |
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          if [ -x "$SDKMANAGER" ]; then
+            yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+            yes | "$SDKMANAGER" \
+              "platforms;android-${ANDROID_COMPILE_SDK}" \
+              "build-tools;${ANDROID_BUILD_TOOLS}" > /dev/null
+          fi
+
+      - name: 运行 Lint
+        run: ./gradlew --no-daemon --stacktrace lintDebug
+
+      - name: 汇总 Lint 结果
+        if: always()
+        run: |
+          REPORT="app/build/reports/lint-results-debug.txt"
+          {
+            echo "### Lint"
+            if [ -f "$REPORT" ]; then
+              echo "- 错误数：$(grep -c 'Error:' "$REPORT" || true)"
+              echo "- 提示数：$(grep -c 'Warning:' "$REPORT" || true)"
+            else
+              echo "未生成 lint 报告"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 上传 Lint 报告
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ZYNotificationHistory-lint-report
+          path: |
+            app/build/reports/lint-results-debug.html
+            app/build/reports/lint-results-debug.xml
+            app/build/reports/lint-results-debug.txt
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Upload lint report
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: lint-report-${{ github.sha }}
-          path: app/build/reports/lint-results-debug.html
-          if-no-files-found: ignore
-          retention-days: 14
+  # ------------------------------------------- Release（仅 v* 标签触发）
+  release:
+    name: 发布 Release APK
+    needs: [build, lint]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v7
 
-      - name: Write job summary
-        if: always()
+      - name: 配置 JDK 17
+        uses: actions/setup-java@v6
+        with:
+          java-version: '17'
+          distribution: temurin
+
+      - name: 配置 Gradle（含依赖缓存）
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: 授予 gradlew 执行权限
+        run: chmod +x ./gradlew
+
+      - name: 补齐 Android SDK 组件
         run: |
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          if [ -x "$SDKMANAGER" ]; then
+            yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+            yes | "$SDKMANAGER" \
+              "platforms;android-${ANDROID_COMPILE_SDK}" \
+              "build-tools;${ANDROID_BUILD_TOOLS}" > /dev/null
+          fi
+
+      # 从仓库 Secret 还原固定发布 keystore（缺失则直接失败，绝不出随机签名的包，
+      # 否则用户已安装的版本将无法覆盖升级；配置方法见 SIGNING.md）
+      - name: 还原固定签名 keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error::未配置 KEYSTORE_BASE64 等 Secret，无法产出签名固定的 Release 包（配置方法见 SIGNING.md）"
+            exit 1
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > app/release.keystore
           {
-            echo "### 构建结果"
-            echo ""
-            echo "| 项目 | 结果 |"
-            echo "| --- | --- |"
-            echo "| Debug APK | ${{ job.status }} |"
-            echo "| Release APK | ${{ steps.keystore.outputs.available == 'true' && job.status || '跳过（无签名文件）' }} |"
-            echo ""
-            echo "产物见本次运行页面的 **Artifacts** 区域。"
+            echo "KEYSTORE_PATH=app/release.keystore"
+            echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "KEY_ALIAS=$KEY_ALIAS"
+            echo "KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: 构建 Release APK
+        run: ./gradlew --no-daemon --stacktrace assembleRelease
+
+      # 输出签名证书 SHA-256 到 Step Summary：这是固定校验值，
+      # 每次发版应完全一致，用户可据此核对更新包来源
+      - name: 校验签名指纹
+        run: |
+          set -euo pipefail
+          APK=$(find app/build/outputs/apk/release -name '*.apk' | head -1)
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort | tail -1)
+          "$APKSIGNER" verify --print-certs "$APK" > certs.txt
+          SHA256=$(grep -oE 'SHA-256 digest: .*' certs.txt | head -1 | cut -d' ' -f3-)
+          {
+            echo "### 签名指纹（固定校验值）"
+            echo '```'
+            echo "SHA-256: $SHA256"
+            echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 重命名 APK（带版本号）
+        run: |
+          mkdir -p dist
+          for f in app/build/outputs/apk/release/*.apk; do
+            mv "$f" "dist/ZYNotificationHistory-${GITHUB_REF_NAME}-release.apk"
+          done
+          ls -lh dist/
+
+      - name: 创建 Release 并附加 APK
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.apk
+          generate_release_notes: true

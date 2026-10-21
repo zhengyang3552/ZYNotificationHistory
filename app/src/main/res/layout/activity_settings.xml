@@ -110,6 +110,31 @@
                                 android:layout_weight="1"
                                 android:text="@string/settings_theme_dark" />
                         </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                        <!-- 动态取色：Android 12+ 跟随壁纸取色，低版本自动回退统一品牌色 -->
+                        <com.google.android.material.divider.MaterialDivider
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_md"
+                            android:layout_marginBottom="@dimen/space_xs" />
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_dynamic_color"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="@dimen/min_touch_target"
+                            android:text="@string/settings_dynamic_color"
+                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_md"
+                            android:layout_marginBottom="@dimen/space_xs"
+                            android:text="@string/settings_dynamic_color_summary"
+                            android:textAppearance="?attr/textAppearanceBodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

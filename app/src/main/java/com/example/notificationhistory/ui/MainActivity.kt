@@ -54,6 +54,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 动态取色需在视图创建前应用（Android 12+ 跟随壁纸，关闭时回退统一品牌色）
+        DynamicColor.apply(this)
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

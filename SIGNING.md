@@ -1,41 +1,52 @@
-# GitHub Actions 自定义签名配置
+# ZYNotificationHistory 发布签名说明
 
-为避免每次编译的 APK 签名不一致导致覆盖安装失败，工作流现在使用固定的 release 签名构建。
+## 方案
 
-## 前置准备
+三个 ZY 系列 Android 应用（ZYEmail / RemoteFileManager / ZYNotificationHistory）共用同一个**固定发布 keystore**，保证：
 
-### 1. 生成签名密钥（如已有请跳过）
+- 同一应用的所有版本签名一致 → 用户可以稳定地覆盖安装与升级
+- 版本号 / versionCode 在 `app/build.gradle` 中固定，不随构建变化
+- 签名证书 SHA-256（校验值）在每次 Release 的 Step Summary 中输出，应恒定不变：
 
-```bash
-keytool -genkey -v -keystore my-release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000
+```
+52:C7:67:37:D2:2A:A3:E7:F2:BF:1A:C9:8E:9F:DB:5F:D4:77:60:34:61:22:64:E6:83:21:3C:44:D2:70:A1:B4
 ```
 
-记录以下信息：
-- **Keystore 密码**
-- **Key 别名 (Alias)**
-- **Key 密码**
+## keystore 与 Secrets 的关系
 
-### 2. 将 Keystore 转为 Base64
+- keystore 原件由仓库所有者本地保管（**不要提交进仓库**）
+- CI 通过 4 个 Actions Secrets 使用它（已配置）：
+  - `KEYSTORE_BASE64` — keystore 的 base64 编码
+  - `KEYSTORE_PASSWORD` / `KEY_ALIAS`（`zy_release`）/ `KEY_PASSWORD`
+
+## 更换机器 / 丢失 Secret 时重新配置
 
 ```bash
-base64 my-release-key.keystore > keystore.base64
+# 1. 用本地备份的 keystore 重新生成 base64
+base64 -w0 zy-release.keystore > keystore.b64
+
+# 2. 重新写入 Secrets（gh 已登录时）
+gh secret set KEYSTORE_BASE64 --repo zhengyang3552/ZYNotificationHistory < keystore.b64
+gh secret set KEYSTORE_PASSWORD --repo zhengyang3552/ZYNotificationHistory --body "<密码>"
+gh secret set KEY_ALIAS --repo zhengyang3552/ZYNotificationHistory --body "zy_release"
+gh secret set KEY_PASSWORD --repo zhengyang3552/ZYNotificationHistory --body "<密码>"
 ```
 
-复制 `keystore.base64` 文件内容，然后到 GitHub 仓库设置中创建 Secrets。
+## 发版流程
 
-### 3. 在 GitHub 仓库中设置 Secrets
+1. 更新 `app/build.gradle` 中的 `versionCode`（+1）与 `versionName`
+2. 提交并打 `v*` 标签推送，CI 的 release job 自动构建签名包并发布到 GitHub Releases
+3. 在 Release 的 CI Step Summary 里核对签名指纹是否仍为上面的固定值
 
-进入仓库 **Settings → Secrets and variables → Actions → Secrets**，添加以下 4 个 Secrets：
+## 本地构建
 
-| Secret 名称 | 说明 |
-|-------------|------|
-| `KEYSTORE_BASE64` | Keystore 文件的 Base64 编码内容 |
-| `KEYSTORE_PASSWORD` | Keystore 密码 |
-| `KEY_ALIAS` | 签名别名 |
-| `KEY_PASSWORD` | Key 密码 |
+不设置 `KEYSTORE_PATH` 时本地可正常构建（release 为 unsigned，仅供验证编译）。
+需要本地出签名包时：
 
-## 工作流行为
-
-- 使用 `./gradlew assembleRelease` 构建 **Release APK**
-- `debug` 构建类型也复用同一签名配置，方便本地调试与 CI 产物签名一致
-- 构建产物路径：`app/build/outputs/apk/release/*`
+```bash
+export KEYSTORE_PATH=/path/to/zy-release.keystore
+export KEYSTORE_PASSWORD="<密码>"
+export KEY_ALIAS=zy_release
+export KEY_PASSWORD="<密码>"
+./gradlew assembleRelease   # 或 gradle :app:assembleRelease
+```
